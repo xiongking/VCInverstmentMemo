@@ -52,10 +52,9 @@ export const InputSection: React.FC<InputSectionProps> = ({ onAnalyze, isLoading
           </div>
         </div>
         
-        <h2 className="text-3xl font-bold text-slate-800 tracking-tight">投资尽职调查</h2>
         <p className="text-slate-500 max-w-lg mx-auto">
-          请在下方上传您的商业计划书（PDF）。
-          我们的 AI 合伙人将进行严格的 VC 级可视化分析。
+          请在下方上传您的商业计划书（PDF格式）。
+          AI智能助理将进行可视化分析。
         </p>
 
         <div 

@@ -33,11 +33,10 @@ function App() {
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
       {status === AppStatus.IDLE || status === AppStatus.ANALYZING || status === AppStatus.ERROR ? (
         <div className="flex flex-col items-center justify-center min-h-screen p-4">
-          <header className="mb-12 text-center">
-            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
-              VC <span className="text-blue-600">洞察分析师</span>
+          <header className="mb-12 text-center flex flex-col items-center">
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+              商业计划书解读
             </h1>
-            <p className="text-slate-500 font-medium">AI 驱动的投资尽职调查</p>
           </header>
           
           <InputSection onAnalyze={handleAnalyze} isLoading={status === AppStatus.ANALYZING} />
