@@ -54,11 +54,17 @@ export interface ComparableCompany {
   description: string;
 }
 
+export interface DeepDiveItem {
+  summaryPoints: string[]; // Logically independent core points
+  detailedContent: string; // Full detailed content for the floating window
+  buttonLabel: string; // Context-aware label (e.g., "View Technical Specs")
+}
+
 export interface BusinessDeepDive {
-  technicalSolution: string; // Detailed tech
-  productPortfolio: string;  // Detailed product
-  commercializationPath: string; // Detailed business model execution
-  operationalStrengths: string; // Operations/Manufacturing/Supply Chain etc.
+  technicalSolution: DeepDiveItem; 
+  productPortfolio: DeepDiveItem;  
+  commercializationPath: DeepDiveItem; 
+  operationalStrengths: DeepDiveItem; 
 }
 
 export interface AnalysisReport {
@@ -68,7 +74,7 @@ export interface AnalysisReport {
     verdictReason: string;
   };
   investmentHighlights: HighlightItem[];
-  // New Section: Business Deep Dive
+  // New Section: Business Deep Dive with Layered Content
   businessDeepDive: BusinessDeepDive;
   marketAnalysis: {
     marketSize: string;
@@ -77,7 +83,7 @@ export interface AnalysisReport {
     customerSegments: string[];
     regulatoryEnvironment: string;
     marketPainPoints: string[];
-    growthChartData: MarketChartData[];
+    techTrends: string[]; // Replaces chart, focuses on tech analysis
     summary: string;
   };
   competitiveLandscape: {

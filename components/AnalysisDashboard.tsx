@@ -1,15 +1,16 @@
 
-import React from 'react';
-import { AnalysisReport } from '../types';
+import React, { useState } from 'react';
+import { AnalysisReport, DeepDiveItem } from '../types';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from 'recharts';
 import { 
   TrendingUp, ShieldAlert, DollarSign, Target, Activity, 
   CheckCircle2, XCircle, AlertCircle, Briefcase, 
-  Users, MoveUpRight, Zap, FileText, Scale, Lightbulb, SearchCheck, Sparkles, Info, User,
-  Gavel, AlertTriangle, Cpu, Layers, ShoppingBag, Truck
+  MoveUpRight, Zap, SearchCheck, Info,
+  Gavel, AlertTriangle, Cpu, Layers, ShoppingBag, Truck, Download, RotateCcw,
+  X, ChevronRight, CircuitBoard
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -17,35 +18,92 @@ interface DashboardProps {
   onReset: () => void;
 }
 
-const SectionCard: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode; className?: string }> = ({ title, icon, children, className = '' }) => (
-  <div className={`bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden ${className}`}>
-    <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3 bg-slate-50/50">
-      <div className="text-blue-600">{icon}</div>
-      <h3 className="font-semibold text-slate-800 text-lg">{title}</h3>
+// Visual Component: Section Header (Flat)
+const SectionHeader: React.FC<{ title: string; icon: React.ReactNode }> = ({ title, icon }) => (
+  <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+    <div className="text-slate-900">
+      {icon}
     </div>
-    <div className="p-6">
-      {children}
-    </div>
+    <h3 className="text-base font-semibold text-slate-900 tracking-tight">{title}</h3>
   </div>
 );
 
-const Badge: React.FC<{ children: React.ReactNode; color?: 'blue' | 'green' | 'red' | 'yellow' | 'slate' | 'purple' }> = ({ children, color = 'blue' }) => {
-  const colors = {
-    blue: 'bg-blue-100 text-blue-700',
-    green: 'bg-emerald-100 text-emerald-700',
-    red: 'bg-rose-100 text-rose-700',
-    yellow: 'bg-amber-100 text-amber-700',
-    slate: 'bg-slate-100 text-slate-700',
-    purple: 'bg-purple-100 text-purple-700',
-  };
+// Visual Component: Mini Data Card (Flat)
+const MiniCard: React.FC<{ label: string; value: string; trend?: string }> = ({ label, value, trend }) => {
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border border-transparent ${colors[color]}`}>
+    <div className="bg-slate-50 rounded-lg p-5 border border-slate-100">
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{label}</p>
+      <p className="text-2xl font-semibold text-slate-900 tracking-tight">
+        {value}
+      </p>
+      {trend && <p className="text-xs text-slate-500 mt-2">{trend}</p>}
+    </div>
+  );
+};
+
+// Visual Component: Main Content Card (Flat)
+const ContentCard: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+  <div className={`bg-white rounded-lg border border-slate-200 p-6 ${className}`}>
+    {children}
+  </div>
+);
+
+// Visual Component: Badge (Flat & Monochrome)
+const Badge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-xs font-medium border border-slate-200 whitespace-normal text-center">
       {children}
     </span>
   );
 };
 
+// Visual Component: Deep Dive Card with Modal Trigger
+const DeepDiveCard: React.FC<{ 
+  icon: React.ReactNode; 
+  title: string; 
+  item: DeepDiveItem;
+  onOpenModal: (title: string, content: string) => void; 
+}> = ({ icon, title, item, onOpenModal }) => (
+  <div className="p-6 bg-white flex flex-col h-full">
+    <div className="flex items-center gap-2 mb-4">
+      <div className="text-slate-400">{icon}</div>
+      <h4 className="text-sm font-bold text-slate-900">{title}</h4>
+    </div>
+    <div className="flex-grow">
+      <ul className="space-y-3 mb-6">
+        {item.summaryPoints.map((point, idx) => (
+          <li key={idx} className="flex items-start gap-2.5">
+             <div className="h-1.5 w-1.5 rounded-full bg-slate-300 mt-1.5 flex-shrink-0" />
+             <span className="text-xs text-slate-600 leading-relaxed text-justify">{point}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <button 
+      onClick={() => onOpenModal(title, item.detailedContent)}
+      className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 transition-all group"
+    >
+      <span>{item.buttonLabel}</span>
+      <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+    </button>
+  </div>
+);
+
 export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState<{title: string, content: string} | null>(null);
+
+  const handleOpenModal = (title: string, content: string) => {
+    setModalContent({ title, content });
+    setModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setTimeout(() => setModalContent(null), 300);
+    document.body.style.overflow = 'unset';
+  };
 
   const getVerdictText = (v: string) => {
     switch (v) {
@@ -56,22 +114,8 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
     }
   };
 
-  const getVerdictColor = (v: string) => {
-    switch (v) {
-      case 'Invest': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
-      case 'Watch': return 'text-amber-600 bg-amber-50 border-amber-200';
-      case 'Pass': return 'text-rose-600 bg-rose-50 border-rose-200';
-      default: return 'text-slate-600 bg-slate-50';
-    }
-  };
-
-  const getStrengthText = (s: string) => {
-     switch(s) {
-       case 'High': return '高';
-       case 'Medium': return '中';
-       case 'Low': return '低';
-       default: return s;
-     }
+  const getVerdictStyles = (v: string) => {
+    return { bg: 'bg-slate-900', text: 'text-white', icon: v === 'Invest' ? CheckCircle2 : v === 'Pass' ? XCircle : AlertCircle };
   };
 
   const getPriorityScore = (p: string) => {
@@ -82,784 +126,538 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
       default: return 0;
     }
   };
-
-  const generateMarkdown = (report: AnalysisReport) => {
-    const today = new Date().toLocaleDateString('zh-CN');
-    
-    // Sort DD items
-    const sortedDD = [...report.finalRecommendation.dueDiligenceFocus].sort(
-      (a, b) => getPriorityScore(b.priority) - getPriorityScore(a.priority)
-    );
-
-    return `
-# 投资备忘录
-
-**目标公司**: ${report.companyAnalysis.name}
-**生成日期**: ${today}
-**初判结果**: ${getVerdictText(report.executiveSummary.preliminaryVerdict)}
-**决策依据**: ${report.executiveSummary.verdictReason}
-
----
-
-## 1. 投资论点
-> "${report.finalRecommendation.investmentThesis}"
-
-### 核心观点
-${report.executiveSummary.coreViewpoints.map(v => `- ${v}`).join('\n')}
-
----
-
-## 2. 公司与团队
-- **公司名称**: ${report.companyAnalysis.name}
-- **团队评估**: ${report.companyAnalysis.teamAssessment}
-
-### 核心团队成员
-${report.companyAnalysis.teamMembers?.map(m => `
-**${m.name}** (${m.role})
-${m.background}
-`).join('\n') || '未提取到具体成员信息'}
-
----
-
-## 3. 投资亮点
-${report.investmentHighlights?.map(h => `- ${h.highlight} (${h.rating === 'High' ? '高' : '中'})`).join('\n') || '暂无亮点提取'}
-
----
-
-## 4. 深度业务与技术解析
-
-### 核心技术方案 (Technology)
-${report.businessDeepDive.technicalSolution}
-
-### 产品矩阵 (Products)
-${report.businessDeepDive.productPortfolio}
-
-### 商业落地与模式 (Commercialization)
-${report.businessDeepDive.commercializationPath}
-
-### 运营与交付能力 (Operations)
-${report.businessDeepDive.operationalStrengths}
-
----
-
-## 5. 行业及市场分析
-**市场综述**: ${report.marketAnalysis.summary}
-
-- **市场规模 (TAM)**: ${report.marketAnalysis.marketSize}
-- **CAGR**: ${report.marketAnalysis.cagr}
-
-### 政策监管环境
-${report.marketAnalysis.regulatoryEnvironment || '未提供详细分析'}
-
-### 市场主要痛点
-${report.marketAnalysis.marketPainPoints?.map(p => `- ${p}`).join('\n') || '未提供'}
-
-### 增长驱动力
-${report.marketAnalysis.drivers.map(d => `- ${d}`).join('\n')}
-
-### 目标客户
-${report.marketAnalysis.customerSegments.map(c => `- ${c}`).join('\n')}
-
----
-
-## 6. 财务与估值
-
-### 关键指标
-${report.financialAnalysis.keyMetrics.map(m => `- **${m.label}**: ${m.value}`).join('\n')}
-
-### 估值分析
-**目标公司估值**: ${report.financialAnalysis.companyValuation || '未披露/未估算'}
-
-### 同行业上市公司对标
-| 公司名称 | 代码 | 市值/估值 | 倍数 |
-| :--- | :--- | :--- | :--- |
-${report.financialAnalysis.comparables?.map(c => `| ${c.name} | ${c.code} | ${c.valuation} | ${c.multiples} |`).join('\n') || '| 暂无详细对标数据 | | | |'}
-
-### 财务综述
-${report.financialAnalysis.summary}
-
----
-
-## 7. 竞争格局
-**护城河**: ${report.competitiveLandscape.moat}
-**竞争综述**: ${report.competitiveLandscape.summary}
-
-### 波特五力分析
-${report.competitiveLandscape.portersFiveForces.map(f => `- **${f.aspect}** (${getStrengthText(f.strength)}): ${f.comment}`).join('\n')}
-
----
-
-## 8. SWOT 分析
-**优势**
-${report.swotAnalysis.strengths.map(s => `- ${s}`).join('\n')}
-
-**劣势**
-${report.swotAnalysis.weaknesses.map(w => `- ${w}`).join('\n')}
-
-**机会**
-${report.swotAnalysis.opportunities.map(o => `- ${o}`).join('\n')}
-
-**威胁**
-${report.swotAnalysis.threats.map(t => `- ${t}`).join('\n')}
-
----
-
-## 9. 投资风险
-${report.riskAssessment.risks.map(r => `- **${r.category}** (${getStrengthText(r.severity)}): ${r.risk}\n  - *应对*: ${r.mitigation}`).join('\n')}
-
----
-
-## 10. 退出策略
-- **路径**: ${report.exitStrategy.paths.join(', ')}
-- **周期**: ${report.exitStrategy.timeframe}
-- **周期依据**: ${report.exitStrategy.timeframeRationale || '未提供'}
-- **回报潜力**: ${report.exitStrategy.returnsPotential}
-- **回报依据**: ${report.exitStrategy.returnsRationale || '未提供'}
-
----
-
-## 11. 后续尽调关注要点
-${sortedDD.map((q, i) => `${i + 1}. [${q.priority}] ${q.question}`).join('\n')}
-
----
-*Generated by 商业计划书解读 AI*
-    `.trim();
-  };
-
+  
   const handleDownloadMarkdown = () => {
-    const markdownContent = generateMarkdown(data);
+    const now = new Date();
+    const formattedTime = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    
+    const { 
+      executiveSummary, finalRecommendation, companyAnalysis, businessDeepDive, 
+      marketAnalysis, financialAnalysis, competitiveLandscape, swotAnalysis, 
+      riskAssessment, exitStrategy 
+    } = data;
+
+     const markdownContent = `
+# 投资备忘录：${companyAnalysis.name}
+**生成时间**: ${now.toLocaleString('zh-CN')}
+**初判结果**: ${getVerdictText(executiveSummary.preliminaryVerdict)}
+
+---
+
+## 1. 核心结论
+**决策依据**: ${executiveSummary.verdictReason}
+**核心观点**:
+${executiveSummary.coreViewpoints.map(v => `- ${v}`).join('\n')}
+
+## 2. 投资论点
+${finalRecommendation.investmentThesis}
+
+## 3. 公司与团队
+**简介**: ${companyAnalysis.businessModel}
+**团队**: ${companyAnalysis.teamAssessment}
+${companyAnalysis.teamMembers.map(m => `- ${m.name} (${m.role}): ${m.background}`).join('\n')}
+
+## 4. 深度业务解析
+### 核心技术方案
+**要点**:
+${businessDeepDive.technicalSolution.summaryPoints.map(p => `- ${p}`).join('\n')}
+> **详细内容**:
+> ${businessDeepDive.technicalSolution.detailedContent.replace(/\n/g, '\n> ')}
+
+### 产品矩阵
+**要点**:
+${businessDeepDive.productPortfolio.summaryPoints.map(p => `- ${p}`).join('\n')}
+> **详细内容**:
+> ${businessDeepDive.productPortfolio.detailedContent.replace(/\n/g, '\n> ')}
+
+### 商业落地
+**要点**:
+${businessDeepDive.commercializationPath.summaryPoints.map(p => `- ${p}`).join('\n')}
+> **详细内容**:
+> ${businessDeepDive.commercializationPath.detailedContent.replace(/\n/g, '\n> ')}
+
+### 运营交付
+**要点**:
+${businessDeepDive.operationalStrengths.summaryPoints.map(p => `- ${p}`).join('\n')}
+> **详细内容**:
+> ${businessDeepDive.operationalStrengths.detailedContent.replace(/\n/g, '\n> ')}
+
+## 5. 行业及市场
+**规模**: ${marketAnalysis.marketSize} | CAGR: ${marketAnalysis.cagr}
+**技术趋势**:
+${marketAnalysis.techTrends.map(t => `- ${t}`).join('\n')}
+**综述**: ${marketAnalysis.summary}
+
+## 6. 竞争格局
+**护城河**: ${competitiveLandscape.moat}
+**五力分析**:
+${competitiveLandscape.portersFiveForces.map(f => `- ${f.aspect} [${f.strength}]: ${f.comment}`).join('\n')}
+
+## 7. SWOT
+**S**: ${swotAnalysis.strengths.join('; ')}
+**W**: ${swotAnalysis.weaknesses.join('; ')}
+**O**: ${swotAnalysis.opportunities.join('; ')}
+**T**: ${swotAnalysis.threats.join('; ')}
+
+## 8. 财务与估值
+**估值**: ${financialAnalysis.companyValuation}
+**关键指标**: ${financialAnalysis.keyMetrics.map(m => `${m.label}: ${m.value}`).join(', ')}
+
+## 9. 风险
+${riskAssessment.risks.map(r => `- ${r.category} [${r.severity}]: ${r.risk}`).join('\n')}
+
+## 10. 退出
+${exitStrategy.paths.join(', ')} (预计 ${exitStrategy.timeframe})
+> ${exitStrategy.returnsRationale}
+
+---
+*Generated by AI Investment Analyst*
+`; 
     const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    
-    // Construct Filename: [CompanyName]_备忘录_[YYYYMMDD_HHmmss]_[RandomID].md
-    const companyName = data.companyAnalysis.name ? data.companyAnalysis.name.replace(/[\/\\?%*:|"<>]/g, '') : '目标公司';
-    const now = new Date();
-    const timestamp = 
-      now.getFullYear().toString() +
-      (now.getMonth() + 1).toString().padStart(2, '0') +
-      now.getDate().toString().padStart(2, '0') + '_' +
-      now.getHours().toString().padStart(2, '0') +
-      now.getMinutes().toString().padStart(2, '0') +
-      now.getSeconds().toString().padStart(2, '0');
-    const randomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-
-    link.download = `${companyName}_备忘录_${timestamp}_${randomId}.md`;
-    
+    link.download = `${companyAnalysis.name}_Memo_${formattedTime}.md`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // Process data for Radar Chart
+  // Radar Data
   const portersData = data.competitiveLandscape.portersFiveForces.map(item => ({
     subject: item.aspect,
     A: item.strength === 'High' ? 3 : item.strength === 'Medium' ? 2 : 1,
     fullMark: 3,
   }));
 
-  // Sort Due Diligence items
   const sortedDueDiligence = [...data.finalRecommendation.dueDiligenceFocus].sort(
     (a, b) => getPriorityScore(b.priority) - getPriorityScore(a.priority)
   );
 
+  const verdict = getVerdictStyles(data.executiveSummary.preliminaryVerdict);
+  const VerdictIcon = verdict.icon;
+
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-20 font-sans">
+      
+      {/* Modal Overlay */}
+      {modalOpen && modalContent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onClick={handleCloseModal} />
+          <div className="relative bg-white w-full max-w-2xl max-h-[85vh] rounded-xl shadow-2xl flex flex-col animate-[fadeIn_0.2s_ease-out]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-slate-900">{modalContent.title} - 详细内容</h3>
+              <button onClick={handleCloseModal} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                <X className="h-5 w-5 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-8 overflow-y-auto leading-loose text-sm text-slate-700 whitespace-pre-wrap">
+              {modalContent.content}
+            </div>
+            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 rounded-b-xl flex justify-end">
+               <button onClick={handleCloseModal} className="px-4 py-2 bg-slate-900 text-white text-xs font-medium rounded hover:bg-slate-800">
+                 关闭
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-               <Briefcase className="h-6 w-6 text-blue-700" />
-               <h1 className="text-xl font-bold text-slate-900">投资备忘录</h1>
-            </div>
-            <div className="flex gap-4">
-               <button 
-                 onClick={handleDownloadMarkdown} 
-                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
-               >
-                 <FileText className="h-4 w-4" />
-                 下载 Markdown
-               </button>
-               <button onClick={onReset} className="text-sm font-medium text-slate-500 hover:text-slate-800">
-                 新分析
-               </button>
-            </div>
-            
-            <div className={`px-4 py-1.5 rounded-full border font-bold text-sm flex items-center gap-2 ${getVerdictColor(data.executiveSummary.preliminaryVerdict)}`}>
-               {data.executiveSummary.preliminaryVerdict === 'Invest' && <CheckCircle2 className="h-4 w-4" />}
-               {data.executiveSummary.preliminaryVerdict === 'Watch' && <AlertCircle className="h-4 w-4" />}
-               {data.executiveSummary.preliminaryVerdict === 'Pass' && <XCircle className="h-4 w-4" />}
-               {getVerdictText(data.executiveSummary.preliminaryVerdict)}
-            </div>
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+             <div className="h-8 w-8 bg-slate-900 rounded flex items-center justify-center text-white">
+                <Briefcase className="h-4 w-4" />
+             </div>
+             <div>
+               <h1 className="text-base font-bold text-slate-900 leading-none">投资决策助手</h1>
+               <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Investment Memo</span>
+             </div>
+          </div>
+          <div className="flex gap-3">
+             <button onClick={handleDownloadMarkdown} className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-50 transition-all">
+               <Download className="h-3.5 w-3.5" />
+               下载报告
+             </button>
+             <button onClick={onReset} className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-white bg-slate-900 hover:bg-black rounded transition-all">
+               <RotateCcw className="h-3.5 w-3.5" />
+               新分析
+             </button>
           </div>
         </div>
       </header>
 
-      <main id="report-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         
-        {/* Executive Summary Hero */}
-        <section className="bg-white rounded-2xl shadow-sm border border-blue-100 p-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full -mr-16 -mt-16 opacity-50"></div>
-          
-          <div className="relative z-10">
-            <h2 className="text-2xl font-bold text-slate-800 mb-4">投资论点</h2>
-            <p className="text-lg text-slate-700 leading-relaxed italic border-l-4 border-blue-500 pl-4 mb-6">
-              "{data.finalRecommendation.investmentThesis}"
-            </p>
-            
-            <div className="grid md:grid-cols-2 gap-8 mt-8">
+        {/* Hero Section */}
+        <div className="flex flex-col gap-6">
+           <div className={`w-full rounded-lg p-8 flex flex-col justify-between border border-slate-200 ${verdict.bg}`}>
               <div>
-                <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">核心观点</h4>
-                <ul className="space-y-2">
-                  {data.executiveSummary.coreViewpoints.map((pt, i) => (
-                    <li key={i} className="flex items-start gap-2 text-slate-600">
-                      <span className="text-blue-500 mt-1 min-w-[4px]">•</span>
-                      <span>{pt}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="bg-slate-50 rounded-lg p-5 border border-slate-100">
-                <h4 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">决策依据</h4>
-                <p className="text-slate-700 text-sm leading-relaxed">
-                  {data.executiveSummary.verdictReason}
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Company & Team - UPDATED LAYOUT */}
-        <section className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
-            <Activity className="h-6 w-6 text-blue-600" />
-            <h3 className="text-xl font-bold text-slate-800">公司与团队核心评估</h3>
-          </div>
-          
-          <div className="mb-8">
-             <div className="p-5 rounded-xl border border-slate-100 bg-slate-50">
-               <h4 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
-                  <Users className="h-4 w-4 text-blue-600" /> 团队综合评估
-               </h4>
-               <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{data.companyAnalysis.teamAssessment}</p>
-             </div>
-          </div>
-
-          {/* New Full Width Section for Team Members */}
-          {data.companyAnalysis.teamMembers && data.companyAnalysis.teamMembers.length > 0 && (
-            <div className="">
-               <h4 className="font-bold text-slate-800 mb-4 flex items-center gap-2 text-lg">
-                 <User className="h-5 w-5 text-indigo-600" /> 核心团队成员
-               </h4>
-               <div className="grid gap-4">
-                 {data.companyAnalysis.teamMembers.map((member, i) => (
-                   <div key={i} className="flex flex-col md:flex-row gap-4 p-5 rounded-xl bg-indigo-50/50 border border-indigo-100">
-                      <div className="md:w-1/4 flex-shrink-0">
-                         <div className="font-bold text-lg text-slate-900">{member.name}</div>
-                         <div className="text-sm font-medium text-indigo-600 mt-1">{member.role}</div>
-                      </div>
-                      <div className="md:w-3/4">
-                         <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{member.background}</p>
-                      </div>
-                   </div>
-                 ))}
-               </div>
-            </div>
-          )}
-        </section>
-
-        {/* Detailed Analysis Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
-          {/* NEW SECTION: Deep Dive Analysis */}
-          <div className="col-span-1 lg:col-span-2">
-             <SectionCard title="深度业务与技术解析" icon={<Layers className="h-5 w-5" />}>
-                <div className="space-y-8">
-                   
-                   {/* Tech */}
-                   <div className="grid md:grid-cols-4 gap-6">
-                      <div className="md:col-span-1">
-                         <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                            <Cpu className="h-5 w-5 text-violet-600" /> 核心技术方案
-                         </h4>
-                      </div>
-                      <div className="md:col-span-3">
-                         <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{data.businessDeepDive.technicalSolution}</p>
-                      </div>
-                   </div>
-
-                   <hr className="border-slate-100" />
-
-                   {/* Product */}
-                   <div className="grid md:grid-cols-4 gap-6">
-                      <div className="md:col-span-1">
-                         <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                            <ShoppingBag className="h-5 w-5 text-rose-500" /> 产品矩阵
-                         </h4>
-                      </div>
-                      <div className="md:col-span-3">
-                         <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{data.businessDeepDive.productPortfolio}</p>
-                      </div>
-                   </div>
-
-                   <hr className="border-slate-100" />
-
-                   {/* Business Model */}
-                   <div className="grid md:grid-cols-4 gap-6">
-                      <div className="md:col-span-1">
-                         <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                            <Briefcase className="h-5 w-5 text-amber-500" /> 商业落地与模式
-                         </h4>
-                      </div>
-                      <div className="md:col-span-3">
-                         <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{data.businessDeepDive.commercializationPath}</p>
-                      </div>
-                   </div>
-
-                   <hr className="border-slate-100" />
-
-                   {/* Operations */}
-                   <div className="grid md:grid-cols-4 gap-6">
-                      <div className="md:col-span-1">
-                         <h4 className="font-bold text-slate-900 flex items-center gap-2">
-                            <Truck className="h-5 w-5 text-emerald-600" /> 运营与交付能力
-                         </h4>
-                      </div>
-                      <div className="md:col-span-3">
-                         <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{data.businessDeepDive.operationalStrengths}</p>
-                      </div>
-                   </div>
-                </div>
-             </SectionCard>
-          </div>
-
-          {/* Industry & Market - UPDATED */}
-          <div className="col-span-1 lg:col-span-2">
-            <SectionCard title="行业及市场分析" icon={<TrendingUp className="h-5 w-5" />}>
-              <div className="grid lg:grid-cols-3 gap-8">
-                {/* Left: Charts and Metrics */}
-                <div className="lg:col-span-1 space-y-6">
-                   <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-sm text-slate-500">市场规模 (TAM)</p>
-                      <p className="text-2xl font-bold text-slate-900">{data.marketAnalysis.marketSize}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-slate-500">CAGR</p>
-                      <p className="text-2xl font-bold text-emerald-600">{data.marketAnalysis.cagr}</p>
-                    </div>
-                  </div>
-                  <div className="h-48 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={data.marketAnalysis.growthChartData}>
-                        <defs>
-                          <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                        <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                        <Tooltip contentStyle={{borderRadius: '8px', border: 'none'}} />
-                        <Area type="monotone" dataKey="value" stroke="#3b82f6" fillOpacity={1} fill="url(#colorValue)" />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* Right: Detailed Text Analysis */}
-                <div className="lg:col-span-2 space-y-4">
-                  <div>
-                    <h5 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                      <Lightbulb className="h-4 w-4 text-yellow-500"/> 行业结构与趋势
-                    </h5>
-                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap bg-slate-50 p-4 rounded-lg border border-slate-100">
-                      {data.marketAnalysis.summary}
-                    </p>
-                  </div>
-                  
-                  {/* New Sections: Regulatory & Pain Points */}
-                  <div className="grid md:grid-cols-2 gap-4">
-                     <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                        <h5 className="font-bold text-slate-800 mb-2 flex items-center gap-2 text-sm">
-                           <Gavel className="h-4 w-4 text-slate-500"/> 政策监管环境
-                        </h5>
-                        <p className="text-sm text-slate-600 leading-relaxed">
-                           {data.marketAnalysis.regulatoryEnvironment || "未提及"}
-                        </p>
-                     </div>
-                     <div className="bg-rose-50 p-4 rounded-lg border border-rose-100">
-                        <h5 className="font-bold text-slate-800 mb-2 flex items-center gap-2 text-sm">
-                           <AlertTriangle className="h-4 w-4 text-rose-500"/> 市场主要痛点
-                        </h5>
-                        <ul className="text-sm text-slate-700 leading-relaxed list-disc list-inside">
-                           {data.marketAnalysis.marketPainPoints?.map((p, i) => (
-                              <li key={i}>{p}</li>
-                           )) || <li>未提及</li>}
-                        </ul>
-                     </div>
-                  </div>
-
-                  <div className="grid sm:grid-cols-2 gap-4">
-                     <div>
-                        <h5 className="font-medium text-slate-900 mb-2 text-sm">增长驱动力</h5>
-                        <div className="flex flex-wrap gap-2">
-                          {data.marketAnalysis.drivers.map((d, i) => (
-                            <Badge key={i} color="blue">{d}</Badge>
-                          ))}
-                        </div>
-                     </div>
-                     <div>
-                        <h5 className="font-medium text-slate-900 mb-2 text-sm">目标客户画像</h5>
-                        <div className="flex flex-wrap gap-2">
-                          {data.marketAnalysis.customerSegments && data.marketAnalysis.customerSegments.map((d, i) => (
-                            <Badge key={i} color="purple">{d}</Badge>
-                          ))}
-                        </div>
-                     </div>
-                  </div>
-                </div>
-              </div>
-            </SectionCard>
-          </div>
-
-          {/* Financials */}
-          <SectionCard title="财务轨迹与估值" icon={<DollarSign className="h-5 w-5" />}>
-             <div className="grid grid-cols-2 gap-4 mb-6">
-                {data.financialAnalysis.keyMetrics.slice(0, 4).map((m, i) => (
-                  <div key={i} className="bg-slate-50 p-3 rounded-lg border border-transparent">
-                    <p className="text-xs text-slate-500 uppercase">{m.label}</p>
-                    <p className="font-semibold text-slate-800">{m.value}</p>
-                  </div>
-                ))}
-             </div>
-             
-             {/* Chart */}
-             <div className="h-56 w-full mb-6">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.financialAnalysis.revenueChartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                  <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{borderRadius: '8px', border: 'none'}} />
-                  <Bar dataKey="revenue" name="营收" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="profit" name="利润" fill="#10b981" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-             </div>
-             
-             {/* Raw Data Table */}
-             <div className="mb-6 overflow-x-auto">
-                <table className="w-full text-sm text-right border-collapse border border-slate-200">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="px-3 py-2 border border-slate-200 text-left text-slate-500 font-medium">年份</th>
-                      <th className="px-3 py-2 border border-slate-200 text-slate-500 font-medium">营收</th>
-                      <th className="px-3 py-2 border border-slate-200 text-slate-500 font-medium">利润</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.financialAnalysis.revenueChartData.map((row, idx) => (
-                      <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                        <td className="px-3 py-2 border border-slate-200 text-left font-mono text-slate-700">{row.year}</td>
-                        <td className="px-3 py-2 border border-slate-200 font-mono text-blue-600">{row.revenue}</td>
-                        <td className="px-3 py-2 border border-slate-200 font-mono text-emerald-600">{row.profit}</td>
-                      </tr>
-                    ))}
-                    {data.financialAnalysis.revenueChartData.length === 0 && (
-                      <tr>
-                        <td colSpan={3} className="px-3 py-4 text-center text-slate-400">暂无财务数据</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-             </div>
-
-             {/* Valuation Section */}
-             <div className="pt-6 border-t border-slate-100">
-               <div className="flex items-center gap-2 mb-4">
-                  <Scale className="h-4 w-4 text-slate-500" />
-                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">估值分析与同业对标</h4>
-               </div>
-               
-               <div className="bg-slate-50 rounded-lg p-4 mb-4 border border-slate-200">
-                  <span className="text-xs text-slate-500 uppercase block mb-1">目标公司估值</span>
-                  <span className="text-xl font-bold text-slate-900">{data.financialAnalysis.companyValuation || "未披露"}</span>
-               </div>
-
-               <div className="overflow-x-auto">
-                 <table className="w-full text-sm text-left">
-                    <thead className="text-xs text-slate-500 uppercase bg-slate-50/50 border-b border-slate-200">
-                      <tr>
-                        <th className="px-2 py-2">公司名称</th>
-                        <th className="px-2 py-2">代码</th>
-                        <th className="px-2 py-2">市值/估值</th>
-                        <th className="px-2 py-2">倍数</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {data.financialAnalysis.comparables && data.financialAnalysis.comparables.map((comp, i) => (
-                        <tr key={i} className="hover:bg-slate-50/50">
-                          <td className="px-2 py-2 font-medium text-slate-700">{comp.name}</td>
-                          <td className="px-2 py-2 text-slate-500 font-mono text-xs">{comp.code}</td>
-                          <td className="px-2 py-2 text-slate-600">{comp.valuation}</td>
-                          <td className="px-2 py-2">
-                             <span className="inline-block bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-xs border border-blue-100">
-                               {comp.multiples}
-                             </span>
-                          </td>
-                        </tr>
-                      ))}
-                      {(!data.financialAnalysis.comparables || data.financialAnalysis.comparables.length === 0) && (
-                        <tr>
-                           <td colSpan={4} className="px-2 py-4 text-center text-slate-400 text-xs italic">
-                             未提供同行业上市公司数据
-                           </td>
-                        </tr>
-                      )}
-                    </tbody>
-                 </table>
-               </div>
-             </div>
-
-          </SectionCard>
-
-          {/* Competition */}
-          <SectionCard title="竞争格局" icon={<Target className="h-5 w-5" />}>
-             <div className="mb-6">
-               <h4 className="text-sm font-semibold text-slate-700 mb-2">护城河评估</h4>
-               <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded border border-slate-100">
-                 {data.competitiveLandscape.moat}
-               </p>
-             </div>
-
-             <div className="mb-6">
-                <h4 className="text-sm font-semibold text-slate-700 mb-2">竞争综述</h4>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                    {data.competitiveLandscape.summary}
-                </p>
-             </div>
-             
-             <h4 className="text-sm font-semibold text-slate-700 mb-3">波特五力模型</h4>
-             
-             {/* Radar Chart for Porter's Forces */}
-             <div className="h-64 w-full mb-6 flex justify-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={portersData}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10 }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 3]} tick={false} axisLine={false} />
-                    <Radar
-                      name="Competitive Intensity"
-                      dataKey="A"
-                      stroke="#8884d8"
-                      fill="#8884d8"
-                      fillOpacity={0.6}
-                    />
-                    <Tooltip contentStyle={{borderRadius: '8px', border: 'none'}} />
-                  </RadarChart>
-                </ResponsiveContainer>
-             </div>
-
-             <div className="space-y-3">
-               {data.competitiveLandscape.portersFiveForces.map((f, i) => (
-                 <div key={i} className="flex flex-col gap-1 text-sm border-b border-slate-50 pb-3 last:border-0">
-                   <div className="flex items-center justify-between">
-                     <span className="text-slate-600 font-medium">{f.aspect}</span>
-                     <Badge color={f.strength === 'High' ? 'red' : f.strength === 'Medium' ? 'yellow' : 'green'}>
-                       {getStrengthText(f.strength)}
-                     </Badge>
-                   </div>
-                   {/* Removed truncate to show full text, added leading-relaxed */}
-                   <p className="text-xs text-slate-500 leading-relaxed whitespace-pre-wrap">{f.comment}</p>
+                 <div className="flex items-center gap-2 mb-4 opacity-80">
+                    <VerdictIcon className="h-5 w-5" />
+                    <span className="text-xs font-bold uppercase tracking-widest">AI 建议</span>
                  </div>
-               ))}
-             </div>
-          </SectionCard>
-
-          {/* SWOT Analysis - Full Width */}
-          <div className="col-span-1 lg:col-span-2">
-             <SectionCard title="SWOT 分析" icon={<MoveUpRight className="h-5 w-5" />}>
-                <div className="grid md:grid-cols-2 gap-6">
-                   <div className="bg-emerald-50 rounded-lg p-5 border border-emerald-100">
-                      <h4 className="text-emerald-800 font-bold mb-3 flex items-center gap-2">
-                         <span className="bg-emerald-200 text-emerald-800 rounded px-1.5 text-sm">S</span> 优势
-                      </h4>
-                      <ul className="space-y-1">
-                         {data.swotAnalysis?.strengths.map((s, i) => (
-                            <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
-                               <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-400 flex-shrink-0"></div>
-                               {s}
-                            </li>
-                         ))}
-                      </ul>
-                   </div>
-
-                   <div className="bg-amber-50 rounded-lg p-5 border border-amber-100">
-                      <h4 className="text-amber-800 font-bold mb-3 flex items-center gap-2">
-                         <span className="bg-amber-200 text-amber-800 rounded px-1.5 text-sm">W</span> 劣势
-                      </h4>
-                      <ul className="space-y-1">
-                         {data.swotAnalysis?.weaknesses.map((s, i) => (
-                            <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
-                               <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-400 flex-shrink-0"></div>
-                               {s}
-                            </li>
-                         ))}
-                      </ul>
-                   </div>
-
-                   <div className="bg-blue-50 rounded-lg p-5 border border-blue-100">
-                      <h4 className="text-blue-800 font-bold mb-3 flex items-center gap-2">
-                         <span className="bg-blue-200 text-blue-800 rounded px-1.5 text-sm">O</span> 机会
-                      </h4>
-                      <ul className="space-y-1">
-                         {data.swotAnalysis?.opportunities.map((s, i) => (
-                            <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
-                               <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-blue-400 flex-shrink-0"></div>
-                               {s}
-                            </li>
-                         ))}
-                      </ul>
-                   </div>
-
-                   <div className="bg-rose-50 rounded-lg p-5 border border-rose-100">
-                      <h4 className="text-rose-800 font-bold mb-3 flex items-center gap-2">
-                         <span className="bg-rose-200 text-rose-800 rounded px-1.5 text-sm">T</span> 威胁
-                      </h4>
-                      <ul className="space-y-1">
-                         {data.swotAnalysis?.threats.map((s, i) => (
-                            <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
-                               <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-rose-400 flex-shrink-0"></div>
-                               {s}
-                            </li>
-                         ))}
-                      </ul>
-                   </div>
-                </div>
-             </SectionCard>
-          </div>
-
-          {/* Investment Highlights - ADDED BEFORE RISKS */}
-          <div className="col-span-1 lg:col-span-2">
-            <SectionCard title="投资亮点" icon={<Sparkles className="h-5 w-5" />}>
-              <div className="grid md:grid-cols-2 gap-4">
-                {data.investmentHighlights?.map((item, i) => (
-                  <div key={i} className="flex flex-col gap-2 bg-amber-50 p-4 rounded-lg border border-amber-100 relative">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-start gap-3">
-                        <div className="h-6 w-6 rounded-full bg-amber-200 text-amber-800 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
-                          {i + 1}
-                        </div>
-                        <p className="text-slate-800 font-medium leading-relaxed text-sm">{item.highlight}</p>
-                      </div>
-                      <Badge color={item.rating === 'High' ? 'green' : 'yellow'}>{item.rating === 'High' ? '高' : '中'}</Badge>
-                    </div>
-                  </div>
-                )) || <p className="text-slate-500">暂无特别亮点提取。</p>}
+                 <h2 className="text-3xl font-bold text-white tracking-tight mb-2">
+                    {getVerdictText(data.executiveSummary.preliminaryVerdict)}
+                 </h2>
+                 <p className="text-sm text-slate-300 leading-relaxed mt-4 border-t border-slate-700 pt-4">
+                    {data.executiveSummary.verdictReason}
+                 </p>
               </div>
-            </SectionCard>
-          </div>
+           </div>
 
-          {/* Investment Risks - Renamed and Reformatted */}
-          <div className="col-span-1 lg:col-span-2">
-            <SectionCard title="投资风险" icon={<ShieldAlert className="h-5 w-5" />}>
-              <div className="grid md:grid-cols-2 gap-4">
-                {data.riskAssessment.risks.map((risk, i) => (
-                  <div key={i} className="bg-slate-50 p-4 rounded-lg border border-slate-100 hover:border-slate-300 transition-colors flex flex-col gap-2">
-                     <div className="flex justify-between items-start">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{risk.category}</span>
-                        </div>
-                        <Badge color={risk.severity === 'High' ? 'red' : risk.severity === 'Medium' ? 'yellow' : 'blue'}>
-                          {getStrengthText(risk.severity)} 风险
-                        </Badge>
-                     </div>
-                     <p className="text-slate-800 font-semibold text-sm leading-snug">{risk.risk}</p>
-                     <div className="mt-2 pt-2 border-t border-slate-100 text-xs text-slate-500 flex gap-2">
-                        <span className="font-bold flex-shrink-0">应对:</span>
-                        <span>{risk.mitigation}</span>
-                     </div>
-                  </div>
-                ))}
+           <div className="w-full bg-white rounded-lg p-8 border border-slate-200 flex flex-col justify-center">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">投资核心论点</h3>
+              <p className="text-xl font-medium text-slate-900 leading-relaxed font-serif">
+                "{data.finalRecommendation.investmentThesis}"
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                 {data.executiveSummary.coreViewpoints.map((pt, i) => (
+                    <span key={i} className="px-3 py-1 bg-slate-50 text-slate-600 text-xs font-medium border border-slate-200 whitespace-normal h-auto">
+                       {pt}
+                    </span>
+                 ))}
               </div>
-            </SectionCard>
-          </div>
-          
-          {/* Due Diligence Focus - Updated to SectionCard with Priorities and Sorting */}
-          <div className="col-span-1 lg:col-span-2">
-             <SectionCard title="后续尽调关注要点" icon={<SearchCheck className="h-5 w-5" />}>
-                <div className="space-y-4">
-                  {sortedDueDiligence.map((q, i) => (
-                     <div key={i} className="flex gap-4 p-4 rounded-lg bg-slate-50 border border-slate-100">
-                        <div className="flex-shrink-0">
-                           <div className="flex flex-col items-center gap-1">
-                              <span className="text-slate-300 font-bold text-lg leading-none font-mono">{(i + 1).toString().padStart(2, '0')}</span>
-                           </div>
-                        </div>
-                        <div className="flex-grow">
-                           <div className="flex justify-between items-start mb-1">
-                              <p className="text-slate-800 font-medium leading-relaxed">{q.question}</p>
-                              <div className="flex-shrink-0 ml-2">
-                                 <Badge color={q.priority === 'High' ? 'red' : q.priority === 'Medium' ? 'yellow' : 'blue'}>
-                                    {q.priority === 'High' ? '高优先级' : q.priority === 'Medium' ? '中优先级' : '低优先级'}
-                                 </Badge>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  ))}
-                  {sortedDueDiligence.length === 0 && (
-                     <p className="text-slate-400 text-center italic">暂无尽调要点生成</p>
-                  )}
-                </div>
-             </SectionCard>
-          </div>
-          
+           </div>
         </div>
 
-        {/* Exit Strategy Footer */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-center mb-6">
-             {/* Paths */}
-             <div className="p-4 bg-slate-50 rounded-lg flex flex-col justify-center">
-               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">退出策略</p>
-               <p className="font-semibold text-slate-800">{data.exitStrategy.paths.join(', ')}</p>
-             </div>
+        {/* Section 1: Company & Team */}
+        <ContentCard>
+           <SectionHeader title="公司与团队" icon={<Activity className="h-4 w-4" />} />
+           
+           <div className="grid lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-1 space-y-4">
+                 <div className="p-4 bg-slate-50 rounded border border-slate-100">
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">团队评估</h4>
+                    <p className="text-sm text-slate-800 leading-relaxed text-justify">
+                       {data.companyAnalysis.teamAssessment}
+                    </p>
+                 </div>
+                 <div className="p-4 rounded border border-slate-200">
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">目标公司</h4>
+                    <p className="text-lg font-bold text-slate-900">{data.companyAnalysis.name}</p>
+                 </div>
+              </div>
 
-             {/* Timeframe */}
-             <div className="p-4 bg-slate-50 rounded-lg flex flex-col justify-between">
-               <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">预计时间周期</p>
-                  <p className="font-semibold text-slate-800 text-lg">{data.exitStrategy.timeframe}</p>
-               </div>
-               <div className="mt-2 pt-2 border-t border-slate-200">
-                  <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">测算依据</p>
-                  <p className="text-[11px] text-slate-600 leading-tight">{data.exitStrategy.timeframeRationale || "未提供"}</p>
-               </div>
-             </div>
+              <div className="lg:col-span-2">
+                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">核心成员</h4>
+                 <div className="grid gap-4">
+                    {data.companyAnalysis.teamMembers?.map((member, i) => (
+                      <div key={i} className="flex gap-4 pb-4 border-b border-slate-100 last:border-0">
+                         <div className="h-10 w-10 rounded bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-600 font-bold text-sm">
+                            {member.name.charAt(0)}
+                         </div>
+                         <div>
+                            <div className="flex items-center gap-2 mb-1">
+                               <span className="font-bold text-slate-900 text-sm">{member.name}</span>
+                               <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 uppercase border border-slate-200">{member.role}</span>
+                            </div>
+                            <p className="text-xs text-slate-600 leading-relaxed">{member.background}</p>
+                         </div>
+                      </div>
+                    ))}
+                 </div>
+              </div>
+           </div>
+        </ContentCard>
 
-             {/* Returns */}
-             <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 flex flex-col justify-between">
-               <div>
-                  <p className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">潜在回报</p>
-                  <p className="font-semibold text-blue-700 text-lg">{data.exitStrategy.returnsPotential}</p>
-               </div>
-               <div className="mt-2 pt-2 border-t border-blue-200/50">
-                  <p className="text-[10px] text-blue-400 uppercase tracking-wider mb-1">测算依据</p>
-                  <p className="text-[11px] text-blue-800 leading-tight">{data.exitStrategy.returnsRationale || "未提供"}</p>
-               </div>
-             </div>
-
-             {/* Placeholder for symmetry or summary */}
-             <div className="p-4 bg-slate-50 rounded-lg flex flex-col justify-center text-slate-400 italic text-sm">
-                <Info className="h-6 w-6 mx-auto mb-2 opacity-50" />
-                <span>退出路径需结合资本市场环境动态评估</span>
-             </div>
+        {/* Section 2: Deep Dive (Modified for Lists & Floating Window) */}
+        <ContentCard>
+          <SectionHeader title="深度解析" icon={<Layers className="h-4 w-4" />} />
+          <div className="grid md:grid-cols-2 gap-px bg-slate-200 border border-slate-200 rounded overflow-hidden">
+             <DeepDiveCard 
+                icon={<Cpu className="h-5 w-5" />} 
+                title="核心技术方案" 
+                item={data.businessDeepDive.technicalSolution} 
+                onOpenModal={handleOpenModal} 
+             />
+             <DeepDiveCard 
+                icon={<ShoppingBag className="h-5 w-5" />} 
+                title="产品矩阵" 
+                item={data.businessDeepDive.productPortfolio} 
+                onOpenModal={handleOpenModal} 
+             />
+             <DeepDiveCard 
+                icon={<Briefcase className="h-5 w-5" />} 
+                title="商业落地" 
+                item={data.businessDeepDive.commercializationPath} 
+                onOpenModal={handleOpenModal} 
+             />
+             <DeepDiveCard 
+                icon={<Truck className="h-5 w-5" />} 
+                title="运营交付" 
+                item={data.businessDeepDive.operationalStrengths} 
+                onOpenModal={handleOpenModal} 
+             />
           </div>
+        </ContentCard>
+
+        {/* Section 3: Market Analysis (Modified: No Chart, Tech Trends Added) */}
+        <ContentCard>
+           <SectionHeader title="行业及市场" icon={<TrendingUp className="h-4 w-4" />} />
+           
+           <div className="mb-8">
+              <div className="grid sm:grid-cols-2 gap-4 mb-8">
+                 <MiniCard label="市场规模 (TAM)" value={data.marketAnalysis.marketSize} />
+                 <MiniCard label="复合增长率 (CAGR)" value={data.marketAnalysis.cagr} trend="预测增长" />
+              </div>
+
+              {/* New Tech Trends Section */}
+              <div className="mb-8 p-6 bg-slate-50 border border-slate-100 rounded-lg">
+                 <div className="flex items-center gap-2 mb-4">
+                    <CircuitBoard className="h-4 w-4 text-slate-400" />
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">行业技术趋势分析</h4>
+                 </div>
+                 <div className="grid md:grid-cols-2 gap-4">
+                    {data.marketAnalysis.techTrends.map((trend, i) => (
+                       <div key={i} className="flex gap-3 items-start p-3 bg-white rounded border border-slate-200">
+                          <div className="h-1.5 w-1.5 rounded-full bg-slate-900 mt-2 flex-shrink-0" />
+                          <p className="text-xs font-medium text-slate-700 leading-relaxed">{trend}</p>
+                       </div>
+                    ))}
+                 </div>
+              </div>
+
+              <div>
+                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">市场综述</h4>
+                 <div className="p-4 rounded border border-slate-100 bg-white">
+                    <p className="text-sm text-slate-700 leading-relaxed text-justify">
+                        {data.marketAnalysis.summary}
+                    </p>
+                 </div>
+              </div>
+           </div>
+
+           {/* Integrated Sub-sections */}
+           <div className="grid md:grid-cols-3 gap-6 pt-6 border-t border-slate-100">
+              <div className="space-y-3">
+                 <div className="flex items-center gap-2 mb-1">
+                    <Gavel className="h-4 w-4 text-slate-400" />
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">政策监管</h4>
+                 </div>
+                 <p className="text-xs font-medium text-slate-600 leading-relaxed bg-slate-50 p-3 rounded border border-slate-100 h-full">
+                    {data.marketAnalysis.regulatoryEnvironment || "无特别监管政策提及"}
+                 </p>
+              </div>
+
+              <div className="space-y-3">
+                 <div className="flex items-center gap-2 mb-1">
+                    <AlertTriangle className="h-4 w-4 text-slate-400" />
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">市场痛点</h4>
+                 </div>
+                 <ul className="space-y-2 bg-slate-50 p-3 rounded border border-slate-100 h-full">
+                    {data.marketAnalysis.marketPainPoints?.map((p, i) => (
+                       <li key={i} className="flex items-start gap-2 text-xs font-medium text-slate-700">
+                          <span className="text-slate-400">•</span>
+                          {p}
+                       </li>
+                    ))}
+                 </ul>
+              </div>
+
+              <div className="space-y-3">
+                 <div className="flex items-center gap-2 mb-1">
+                    <Zap className="h-4 w-4 text-slate-400" />
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">驱动因素</h4>
+                 </div>
+                 <div className="flex flex-wrap gap-2 bg-slate-50 p-3 rounded border border-slate-100 h-full content-start">
+                    {data.marketAnalysis.drivers.map((d, i) => (
+                       <Badge key={i}>{d}</Badge>
+                    ))}
+                 </div>
+              </div>
+           </div>
+        </ContentCard>
+
+        {/* Section 4: Financials */}
+        <ContentCard>
+           <SectionHeader title="财务与估值" icon={<DollarSign className="h-4 w-4" />} />
+           
+           <div className="grid lg:grid-cols-2 gap-8">
+              <div>
+                 <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="col-span-2 p-4 bg-slate-900 rounded text-white">
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">目标公司估值</p>
+                       <p className="text-2xl font-bold tracking-tight text-white">{data.financialAnalysis.companyValuation || "未披露"}</p>
+                    </div>
+                    {data.financialAnalysis.keyMetrics.slice(0, 4).map((m, i) => (
+                      <div key={i} className="p-3 bg-white rounded border border-slate-200">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{m.label}</p>
+                        <p className="text-base font-bold text-slate-900">{m.value}</p>
+                      </div>
+                    ))}
+                 </div>
+                 <div className="h-48 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={data.financialAnalysis.revenueChartData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                        <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 10, fontWeight: 500}} />
+                        <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 10, fontWeight: 500}} />
+                        <Tooltip contentStyle={{borderRadius: '0px', border: '1px solid #e2e8f0', boxShadow: 'none'}} cursor={{fill: '#f1f5f9'}} />
+                        <Bar dataKey="revenue" name="营收" fill="#334155" radius={[0, 0, 0, 0]} barSize={30} />
+                        <Bar dataKey="profit" name="利润" fill="#94a3b8" radius={[0, 0, 0, 0]} barSize={30} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                 </div>
+              </div>
+
+              <div>
+                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">可比公司对标</h4>
+                 <div className="overflow-hidden rounded border border-slate-200">
+                    <table className="w-full text-xs">
+                       <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider">
+                          <tr>
+                             <th className="px-4 py-3 text-left border-b border-slate-200">公司名称</th>
+                             <th className="px-4 py-3 text-left border-b border-slate-200">代码/状态</th>
+                             <th className="px-4 py-3 text-left border-b border-slate-200">估值/市值</th>
+                             <th className="px-4 py-3 text-left border-b border-slate-200">倍数</th>
+                          </tr>
+                       </thead>
+                       <tbody className="divide-y divide-slate-100 bg-white">
+                          {data.financialAnalysis.comparables?.map((comp, i) => (
+                             <tr key={i} className="hover:bg-slate-50 transition-colors">
+                                <td className="px-4 py-3 font-bold text-slate-800 text-left">{comp.name}</td>
+                                <td className="px-4 py-3 font-mono text-slate-400 text-left">{comp.code}</td>
+                                <td className="px-4 py-3 font-medium text-slate-600 text-left">{comp.valuation}</td>
+                                <td className="px-4 py-3 text-left"><Badge>{comp.multiples}</Badge></td>
+                             </tr>
+                          ))}
+                       </tbody>
+                    </table>
+                 </div>
+                 <div className="mt-6 p-4 bg-slate-50 rounded border border-slate-100">
+                    <p className="text-xs text-slate-600 leading-relaxed text-justify">
+                       {data.financialAnalysis.summary}
+                    </p>
+                 </div>
+              </div>
+           </div>
+        </ContentCard>
+
+        {/* Section 5: Competition */}
+        <ContentCard>
+           <SectionHeader title="竞争格局" icon={<Target className="h-4 w-4" />} />
+           <div className="grid md:grid-cols-2 gap-8">
+               <div className="h-64 w-full relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="75%" data={portersData}>
+                      <PolarGrid stroke="#e2e8f0" />
+                      <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }} />
+                      <PolarRadiusAxis angle={30} domain={[0, 3]} tick={false} axisLine={false} />
+                      <Radar name="Intensity" dataKey="A" stroke="#334155" strokeWidth={2} fill="#334155" fillOpacity={0.2} />
+                      <Tooltip contentStyle={{borderRadius: '0px', border: '1px solid #e2e8f0'}} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+               </div>
+               <div className="space-y-4">
+                  <div className="p-3 bg-slate-50 rounded border border-slate-100">
+                     <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">护城河</h5>
+                     <p className="text-xs font-medium text-slate-700">{data.competitiveLandscape.moat}</p>
+                  </div>
+                  {data.competitiveLandscape.portersFiveForces.map((f, i) => (
+                    <div key={i} className="flex justify-between items-start border-b border-slate-100 pb-2 last:border-0">
+                      <span className="text-xs font-bold text-slate-700 w-1/3">{f.aspect}</span>
+                      <p className="text-xs text-slate-500 w-2/3 pl-2 text-right">{f.comment}</p>
+                    </div>
+                  ))}
+               </div>
+           </div>
+        </ContentCard>
+
+        {/* Section 6: Risk Assessment */}
+        <ContentCard>
+           <SectionHeader title="风险评估" icon={<ShieldAlert className="h-4 w-4" />} />
+           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.riskAssessment.risks.map((risk, i) => (
+                 <div key={i} className="p-4 rounded border border-slate-200">
+                    <div className="flex justify-between items-start mb-2">
+                       <span className="text-xs font-bold text-slate-900 uppercase">{risk.category}</span>
+                       <span className="text-[10px] font-bold bg-slate-900 text-white px-1.5 py-0.5 rounded">
+                          {risk.severity === 'High' ? '高' : risk.severity === 'Medium' ? '中' : '低'}风险
+                       </span>
+                    </div>
+                    <p className="text-sm font-bold text-slate-800 mb-2">{risk.risk}</p>
+                    <div className="flex gap-2 items-start text-xs text-slate-500">
+                       <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                       <span>{risk.mitigation}</span>
+                    </div>
+                 </div>
+              ))}
+           </div>
+        </ContentCard>
+
+        {/* Section 7: SWOT */}
+        <ContentCard>
+           <SectionHeader title="SWOT 分析" icon={<MoveUpRight className="h-4 w-4" />} />
+           <div className="grid md:grid-cols-2 gap-px bg-slate-200 border border-slate-200 rounded overflow-hidden">
+              <div className="p-6 bg-white">
+                 <h4 className="flex items-center gap-2 text-sm font-bold text-slate-900 mb-3">S 优势 (Strengths)</h4>
+                 <ul className="space-y-1.5">{data.swotAnalysis.strengths.map((s,i) => <li key={i} className="text-xs text-slate-600">• {s}</li>)}</ul>
+              </div>
+              <div className="p-6 bg-white">
+                 <h4 className="flex items-center gap-2 text-sm font-bold text-slate-900 mb-3">W 劣势 (Weaknesses)</h4>
+                 <ul className="space-y-1.5">{data.swotAnalysis.weaknesses.map((s,i) => <li key={i} className="text-xs text-slate-600">• {s}</li>)}</ul>
+              </div>
+              <div className="p-6 bg-white">
+                 <h4 className="flex items-center gap-2 text-sm font-bold text-slate-900 mb-3">O 机会 (Opportunities)</h4>
+                 <ul className="space-y-1.5">{data.swotAnalysis.opportunities.map((s,i) => <li key={i} className="text-xs text-slate-600">• {s}</li>)}</ul>
+              </div>
+              <div className="p-6 bg-white">
+                 <h4 className="flex items-center gap-2 text-sm font-bold text-slate-900 mb-3">T 威胁 (Threats)</h4>
+                 <ul className="space-y-1.5">{data.swotAnalysis.threats.map((s,i) => <li key={i} className="text-xs text-slate-600">• {s}</li>)}</ul>
+              </div>
+           </div>
+        </ContentCard>
+
+        {/* Footer: Exit & DD */}
+        <div className="flex flex-col gap-6">
+           <ContentCard className="bg-slate-900 text-white border-slate-900">
+               <div className="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4">
+                  <MoveUpRight className="h-4 w-4 text-white" />
+                  <h3 className="text-base font-semibold text-white tracking-tight">退出策略</h3>
+               </div>
+               <div className="space-y-6">
+                  <div>
+                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">退出路径</p>
+                     <p className="text-lg font-bold text-white">{data.exitStrategy.paths.join(', ')}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                     <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">预计周期</p>
+                        <p className="text-xl font-bold text-white">{data.exitStrategy.timeframe}</p>
+                     </div>
+                     <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">潜在回报</p>
+                        <p className="text-xl font-bold text-white">{data.exitStrategy.returnsPotential}</p>
+                     </div>
+                  </div>
+                  <div className="pt-4 border-t border-slate-700">
+                     <p className="text-[10px] text-slate-400 leading-relaxed italic">
+                        "{data.exitStrategy.timeframeRationale}"
+                     </p>
+                  </div>
+               </div>
+           </ContentCard>
+
+           <ContentCard>
+              <SectionHeader title="尽调核心关注" icon={<SearchCheck className="h-4 w-4" />} />
+              <div className="space-y-3">
+                 {sortedDueDiligence.map((dd, i) => (
+                    <div key={i} className="flex gap-4 p-4 rounded border border-slate-100">
+                       <span className="flex items-center justify-center h-6 w-6 rounded-full bg-slate-100 text-[10px] font-bold text-slate-600 flex-shrink-0">
+                          {i+1}
+                       </span>
+                       <div className="flex-grow">
+                          <p className="text-sm font-bold text-slate-800 mb-1">{dd.question}</p>
+                       </div>
+                       <span className="text-[10px] font-bold bg-white border border-slate-200 px-2 py-1 rounded text-slate-600">
+                          {dd.priority === 'High' ? '高' : dd.priority === 'Medium' ? '中' : '低'}优先级
+                       </span>
+                    </div>
+                 ))}
+              </div>
+           </ContentCard>
         </div>
 
       </main>

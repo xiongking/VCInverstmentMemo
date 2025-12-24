@@ -1,5 +1,6 @@
+
 import React, { useState, useRef } from 'react';
-import { UploadCloud, FileText, Search } from 'lucide-react';
+import { UploadCloud, FileText, ArrowRight } from 'lucide-react';
 
 interface InputSectionProps {
   onAnalyze: (file: File) => void;
@@ -9,6 +10,7 @@ interface InputSectionProps {
 export const InputSection: React.FC<InputSectionProps> = ({ onAnalyze, isLoading }) => {
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -23,6 +25,7 @@ export const InputSection: React.FC<InputSectionProps> = ({ onAnalyze, isLoading
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const selectedFile = e.dataTransfer.files[0];
       if (selectedFile.type === 'application/pdf') {
@@ -35,6 +38,12 @@ export const InputSection: React.FC<InputSectionProps> = ({ onAnalyze, isLoading
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
   };
 
   const handleAnalyzeClick = () => {
@@ -44,23 +53,22 @@ export const InputSection: React.FC<InputSectionProps> = ({ onAnalyze, isLoading
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-8 text-center space-y-6">
-        <div className="flex justify-center">
-          <div className="h-16 w-16 bg-blue-50 rounded-full flex items-center justify-center">
-            <Search className="h-8 w-8 text-blue-600" />
-          </div>
-        </div>
+    <div className="w-full">
+      <div className="bg-white border border-slate-200 rounded-xl p-10 text-center space-y-8">
         
-        <p className="text-slate-500 max-w-lg mx-auto">
-          请在下方上传您的商业计划书（PDF格式）。
-          AI智能助理将进行可视化分析。
-        </p>
-
         <div 
-          className="relative border-2 border-dashed border-slate-300 rounded-xl p-12 hover:bg-slate-50 transition-colors cursor-pointer"
+          className={`
+            relative border border-dashed rounded-lg p-16 transition-all duration-200 cursor-pointer
+            ${isDragging 
+              ? 'border-slate-900 bg-slate-50' 
+              : file 
+                ? 'border-slate-300 bg-slate-50/50' 
+                : 'border-slate-300 hover:border-slate-400 hover:bg-slate-50'
+            }
+          `}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
           onClick={() => fileInputRef.current?.click()}
         >
           <input 
@@ -74,23 +82,32 @@ export const InputSection: React.FC<InputSectionProps> = ({ onAnalyze, isLoading
           
           <div className="flex flex-col items-center justify-center space-y-4">
              {file ? (
-                <div className="h-16 w-16 bg-emerald-100 rounded-full flex items-center justify-center">
-                   <FileText className="h-8 w-8 text-emerald-600" />
-                </div>
+                <>
+                  <div className="h-16 w-16 bg-white border border-slate-200 rounded-full flex items-center justify-center">
+                     <FileText className="h-8 w-8 text-slate-700" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                     <p className="text-lg font-medium text-slate-900">
+                       {file.name}
+                     </p>
+                     <p className="text-sm text-slate-500 mt-1">准备就绪</p>
+                  </div>
+                </>
              ) : (
-                <div className="h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center">
-                   <UploadCloud className="h-8 w-8 text-slate-400" />
-                </div>
+                <>
+                  <div className="h-16 w-16 bg-white border border-slate-200 rounded-full flex items-center justify-center">
+                     <UploadCloud className="h-8 w-8 text-slate-400" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <p className="text-lg font-medium text-slate-900 mb-1">
+                      点击或拖拽 PDF 文件
+                    </p>
+                    <p className="text-sm text-slate-400">
+                      支持 PDF 格式商业计划书
+                    </p>
+                  </div>
+                </>
              )}
-             
-             <div>
-               <p className="text-lg font-semibold text-slate-700">
-                 {file ? file.name : "点击或拖拽上传商业计划书 (PDF)"}
-               </p>
-               {!file && (
-                 <p className="text-sm text-slate-400 mt-1">支持格式: PDF</p>
-               )}
-             </div>
           </div>
         </div>
 
@@ -99,30 +116,17 @@ export const InputSection: React.FC<InputSectionProps> = ({ onAnalyze, isLoading
             onClick={handleAnalyzeClick}
             disabled={isLoading || !file}
             className={`
-              flex items-center gap-2 px-8 py-3 rounded-full text-white font-semibold text-lg transition-all
+              flex items-center gap-3 px-12 py-3.5 rounded-lg text-sm font-medium transition-all duration-200
               ${isLoading || !file 
-                ? 'bg-slate-300 cursor-not-allowed' 
-                : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl hover:-translate-y-1'
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                : 'bg-slate-900 text-white hover:bg-black hover:-translate-y-0.5 shadow-sm'
               }
             `}
           >
-            {isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                正在分析文档...
-              </>
-            ) : (
-              <>
-                <FileText className="h-5 w-5" />
-                生成投资备忘录
-              </>
-            )}
+            <span>生成投资备忘录</span>
+            <ArrowRight className="h-4 w-4" />
           </button>
         </div>
-        
-        <p className="text-xs text-slate-400 mt-4">
-          技术支持: Gemini 3 Flash • VC Framework v2.0
-        </p>
       </div>
     </div>
   );

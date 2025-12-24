@@ -8,39 +8,22 @@ Your task is to analyze the business plan PDF document provided by the user and 
 
 **CRITICAL INSTRUCTIONS FOR CONTENT DEPTH & FORMATTING:**
 
-1.  **DEEP DIVE SECTION (NEW & CRITICAL)**: You must create a "Deep Business & Tech Analysis" section. 
-    *   **Do NOT summarize** this section into bullet points. Use long, descriptive paragraphs.
-    *   **Technical Solution**: Extract specific technical parameters, patents, architecture, or scientific principles mentioned.
-    *   **Product Portfolio**: List specific product names, SKUs, or service lines with their detailed descriptions.
-    *   **Commercialization**: Explain *exactly* how they sell, price, and deliver (sales channels, unit economics if avail).
-2.  **TEAM MEMBERS**: Extract **ALL** available details for core team members. Include full background, past companies, education.
-3.  **STRICT CHINESE FORMATTING (CRITICAL)**: 
-    *   **Language**: All output must be in Simplified Chinese (简体中文).
-    *   **No Redundant English**: Do NOT include English translations in brackets for Chinese terms. 
-        *   **Correct**: "科创板", "纳斯达克". 
-        *   **Incorrect**: "科创板(Star Market)", "人工智能(AI)".
-    *   **Currency & Numbers**: Use **Chinese units** (万, 亿) strictly. **NEVER** use "M", "K", "B" suffixes with currency symbols like "¥".
-        *   **Correct**: "1500万元", "4亿元", "1000万美元", "投后估值4000万".
-        *   **Incorrect**: "¥15M", "¥400M", "$10M", "1500万(≈¥15M)".
-    *   **Valuation Conversion**: If the valuation is NOT in CNY, provide the converted CNY value in brackets using Chinese units (e.g., "1000万美元 (约7200万元)").
-4.  **COMPARABLE COMPANIES**: If a comparable company is private/unlisted, the 'code' field MUST be "未上市".
-5.  **EXIT STRATEGY**: Provide both the Timeframe and Returns Potential, and for **BOTH**, provide a detailed "Rationale" (calculation basis or market logic).
+1.  **DEEP DIVE SECTION (LAYERED CONTENT)**: 
+    *   For each area (Tech, Product, Commercial, Ops), you must split the content into two parts:
+        *   **Summary Points**: 3-5 concise, logically independent bullet points that capture the core value proposition.
+        *   **Detailed Content**: The raw, high-density information (e.g., specific chemical formulas, full list of 20+ SKUs, detailed architectural diagrams text, complex pricing tables) that is too detailed for the main dashboard but essential for due diligence.
+        *   **Button Label**: A short, context-aware label for the button that opens the details (e.g., "查看完整配方", "查看技术参数细节", "浏览产品矩阵").
+
+2.  **MARKET ANALYSIS**: 
+    *   **No Charts**: Do not generate chart data.
+    *   **Tech Trends**: Instead, provide a detailed analysis of **Technological Trends** in this specific industry.
+
+3.  **STRICT CHINESE FORMATTING**: 
+    *   **Language**: Simplified Chinese (简体中文).
+    *   **No Redundant English**.
+    *   **Currency & Numbers**: Use Chinese units (万, 亿).
 
 **Output JSON strictly matching the schema provided.**
-
-The specific JSON schema requires:
-- executiveSummary: Key points and a verdict.
-- investmentHighlights: List of 4-6 highlights with ratings.
-- companyAnalysis: Name, high-level summaries, and teamMembers.
-- **businessDeepDive**: Detailed Tech, Product, Commercialization, Operations. (Detailed strings).
-- marketAnalysis: Size, CAGR, Drivers, regulatoryEnvironment, marketPainPoints, summary.
-- competitiveLandscape: Competitors, Moat, Detailed Porter's 5 Forces.
-- swotAnalysis: SWOT.
-- financialAnalysis: Metrics, valuation (w/ conversion), comparables (code="未上市" if private).
-- growthAndCatalysts: Strategy.
-- riskAssessment: Detailed risks with Chinese Categories.
-- exitStrategy: Paths, timeframe, **timeframeRationale**, returnsPotential, **returnsRationale**.
-- finalRecommendation: Thesis and dueDiligenceFocus.
 `;
 
 const fileToBase64 = (file: File): Promise<string> => {
@@ -64,6 +47,26 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
 
   const ai = new GoogleGenAI({ apiKey });
 
+  const deepDiveItemSchema = {
+    type: Type.OBJECT,
+    properties: {
+      summaryPoints: { 
+        type: Type.ARRAY, 
+        items: { type: Type.STRING },
+        description: "3-5 concise, logically independent core points."
+      },
+      detailedContent: { 
+        type: Type.STRING, 
+        description: "The full, high-density detailed content (long text)." 
+      },
+      buttonLabel: { 
+        type: Type.STRING, 
+        description: "Label for the button, e.g., '查看技术详情'." 
+      }
+    },
+    required: ["summaryPoints", "detailedContent", "buttonLabel"]
+  };
+
   const schema: Schema = {
     type: Type.OBJECT,
     properties: {
@@ -81,61 +84,50 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
         items: {
           type: Type.OBJECT,
           properties: {
-            highlight: { type: Type.STRING, description: "A specific, detailed highlight (2-3 sentences)." },
+            highlight: { type: Type.STRING },
             rating: { type: Type.STRING, enum: ["High", "Medium"] }
           },
           required: ["highlight", "rating"]
         },
-        description: "List of 4-6 key investment highlights with impact ratings."
       },
       businessDeepDive: {
         type: Type.OBJECT,
         properties: {
-          technicalSolution: { type: Type.STRING, description: "Extremely detailed description of technology/IP/Architecture (200+ words)." },
-          productPortfolio: { type: Type.STRING, description: "Detailed list and description of products/services (200+ words)." },
-          commercializationPath: { type: Type.STRING, description: "Detailed business model, sales strategy, pricing (200+ words)." },
-          operationalStrengths: { type: Type.STRING, description: "Operations, supply chain, manufacturing, or delivery capabilities." },
+          technicalSolution: deepDiveItemSchema,
+          productPortfolio: deepDiveItemSchema,
+          commercializationPath: deepDiveItemSchema,
+          operationalStrengths: deepDiveItemSchema,
         },
         required: ["technicalSolution", "productPortfolio", "commercializationPath", "operationalStrengths"],
       },
       marketAnalysis: {
         type: Type.OBJECT,
         properties: {
-          marketSize: { type: Type.STRING, description: "Use Chinese units (e.g. 100亿元)." },
+          marketSize: { type: Type.STRING },
           cagr: { type: Type.STRING },
           drivers: { type: Type.ARRAY, items: { type: Type.STRING } },
           customerSegments: { type: Type.ARRAY, items: { type: Type.STRING } },
-          regulatoryEnvironment: { type: Type.STRING, description: "Analysis of policy and regulation." },
-          marketPainPoints: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of key market pain points." },
-          summary: { type: Type.STRING, description: "A detailed paragraph (100+ words) analyzing industry structure." },
-          growthChartData: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                year: { type: Type.STRING },
-                value: { type: Type.NUMBER },
-              },
-              required: ["year", "value"],
-            },
-          },
+          regulatoryEnvironment: { type: Type.STRING },
+          marketPainPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
+          techTrends: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Specific technical trends in the industry." },
+          summary: { type: Type.STRING },
         },
-        required: ["marketSize", "cagr", "drivers", "customerSegments", "growthChartData", "summary", "regulatoryEnvironment", "marketPainPoints"],
+        required: ["marketSize", "cagr", "drivers", "customerSegments", "techTrends", "summary", "regulatoryEnvironment", "marketPainPoints"],
       },
       competitiveLandscape: {
         type: Type.OBJECT,
         properties: {
           competitors: { type: Type.ARRAY, items: { type: Type.STRING } },
-          moat: { type: Type.STRING, description: "Detailed analysis of the competitive moat." },
-          summary: { type: Type.STRING, description: "Detailed competitive analysis." },
+          moat: { type: Type.STRING },
+          summary: { type: Type.STRING },
           portersFiveForces: {
             type: Type.ARRAY,
             items: {
               type: Type.OBJECT,
               properties: {
-                aspect: { type: Type.STRING, description: "Must be in Chinese (e.g., 供应商议价能力). NO English." },
+                aspect: { type: Type.STRING },
                 strength: { type: Type.STRING, enum: ["Low", "Medium", "High"] },
-                comment: { type: Type.STRING, description: "Full detailed explanation, NO truncation." },
+                comment: { type: Type.STRING },
               },
               required: ["aspect", "strength", "comment"],
             },
@@ -156,10 +148,10 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
       companyAnalysis: {
         type: Type.OBJECT,
         properties: {
-          name: { type: Type.STRING, description: "The full name of the company being analyzed." },
-          businessModel: { type: Type.STRING, description: "Summary of business model." },
-          productHighlight: { type: Type.STRING, description: "Summary of product highlight." },
-          teamAssessment: { type: Type.STRING, description: "Critical assessment of team completeness." },
+          name: { type: Type.STRING },
+          businessModel: { type: Type.STRING },
+          productHighlight: { type: Type.STRING },
+          teamAssessment: { type: Type.STRING },
           teamMembers: {
             type: Type.ARRAY,
             items: {
@@ -167,11 +159,10 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
               properties: {
                 name: { type: Type.STRING },
                 role: { type: Type.STRING },
-                background: { type: Type.STRING, description: "Detailed bio, history, education, previous companies." }
+                background: { type: Type.STRING }
               },
               required: ["name", "role", "background"]
             },
-            description: "List of specific team members found in the document."
           }
         },
         required: ["name", "businessModel", "productHighlight", "teamAssessment", "teamMembers"],
@@ -181,7 +172,7 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
         properties: {
           valuationAssessment: { type: Type.STRING },
           summary: { type: Type.STRING },
-          companyValuation: { type: Type.STRING, description: "Valuation using Chinese units (万/亿). No English symbols like 'M'." },
+          companyValuation: { type: Type.STRING },
           keyMetrics: {
             type: Type.ARRAY,
             items: {
@@ -211,8 +202,8 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
               type: Type.OBJECT,
               properties: {
                 name: { type: Type.STRING },
-                code: { type: Type.STRING, description: "Stock code or '未上市' if private." },
-                valuation: { type: Type.STRING, description: "Use Chinese units (万/亿)." },
+                code: { type: Type.STRING },
+                valuation: { type: Type.STRING },
                 multiples: { type: Type.STRING },
                 description: { type: Type.STRING },
               },
@@ -239,8 +230,8 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
             items: {
               type: Type.OBJECT,
               properties: {
-                category: { type: Type.STRING, description: "Risk Category in Chinese (e.g. 市场风险, 研发风险)." },
-                risk: { type: Type.STRING, description: "Detailed explanation of the risk." },
+                category: { type: Type.STRING },
+                risk: { type: Type.STRING },
                 severity: { type: Type.STRING, enum: ["Low", "Medium", "High"] },
                 mitigation: { type: Type.STRING },
               },
@@ -253,11 +244,11 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
       exitStrategy: {
         type: Type.OBJECT,
         properties: {
-          paths: { type: Type.ARRAY, items: { type: Type.STRING, description: "No English redundancy." } },
+          paths: { type: Type.ARRAY, items: { type: Type.STRING } },
           timeframe: { type: Type.STRING },
-          timeframeRationale: { type: Type.STRING, description: "Reasoning for the estimated timeframe." },
+          timeframeRationale: { type: Type.STRING },
           returnsPotential: { type: Type.STRING },
-          returnsRationale: { type: Type.STRING, description: "Basis for returns calculation." },
+          returnsRationale: { type: Type.STRING },
         },
         required: ["paths", "timeframe", "timeframeRationale", "returnsPotential", "returnsRationale"],
       },
@@ -271,12 +262,11 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
             items: { 
               type: Type.OBJECT,
               properties: {
-                question: { type: Type.STRING, description: "A detailed paragraph explaining the concern." },
+                question: { type: Type.STRING },
                 priority: { type: Type.STRING, enum: ["High", "Medium", "Low"] }
               },
               required: ["question", "priority"]
             },
-            description: "10-15 specific check points with priorities." 
           },
         },
         required: ["decision", "investmentThesis", "dueDiligenceFocus"],
