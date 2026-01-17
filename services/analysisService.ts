@@ -8,7 +8,9 @@ const pdfjsLib = pdfjsDist.default || pdfjsDist;
 
 // Initialize PDF.js worker
 if (pdfjsLib.GlobalWorkerOptions) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://esm.sh/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
+  // Use cdnjs for reliable worker script loading. 
+  // esm.sh worker paths can sometimes be problematic with importScripts due to redirects or content-types.
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 }
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
