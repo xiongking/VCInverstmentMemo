@@ -1,5 +1,5 @@
 
-import { AnalysisReport, ApiSettings } from "../types";
+import { AnalysisReport, ApiSettings, SearchSource } from "../types";
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Initialize PDF.js worker
@@ -32,8 +32,9 @@ async function extractPdfText(file: File): Promise<string> {
 }
 
 // --- Helper: Tavily Search ---
-async function searchTavily(query: string, apiKey: string): Promise<string> {
-  if (!apiKey || apiKey.length < 5) return "";
+// Now returns both the context string and the raw source objects
+async function searchTavily(query: string, apiKey: string): Promise<{ context: string, sources: SearchSource[] }> {
+  if (!apiKey || apiKey.length < 5) return { context: "", sources: [] };
   
   try {
     const response = await fetch(TAVILY_API_URL, {
@@ -50,13 +51,19 @@ async function searchTavily(query: string, apiKey: string): Promise<string> {
     
     const data = await response.json();
     if (data.results) {
-      // Summarize results to save tokens
-      return data.results.map((r: any) => `Source: ${r.title} (${r.url})\nSnippet: ${r.content}`).join("\n---\n");
+      const sources: SearchSource[] = data.results.map((r: any) => ({
+        title: r.title,
+        url: r.url
+      }));
+
+      const context = data.results.map((r: any) => `Source: ${r.title} (${r.url})\nSnippet: ${r.content}`).join("\n---\n");
+      
+      return { context, sources };
     }
-    return "";
+    return { context: "", sources: [] };
   } catch (e) {
     console.warn(`Tavily search failed for query: ${query}`, e);
-    return "";
+    return { context: "", sources: [] };
   }
 }
 
@@ -189,15 +196,30 @@ export const analyzeBusinessPlanDeepSeek = async (file: File, settings: ApiSetti
   // Step 3: STORM - Parallel Retrieval
   console.log("Step 3: STORM - Executing Parallel Deep Search...");
   let combinedSearchContext = "";
+  let allSearchSources: SearchSource[] = [];
   
   if (settings.tavilyKey) {
     const searchPromises = stormQueries.map(async (query) => {
-       const result = await searchTavily(query, settings.tavilyKey);
-       return `### Perspective: ${query}\n${result}\n`;
+       const { context, sources } = await searchTavily(query, settings.tavilyKey);
+       return { context: `### Perspective: ${query}\n${context}\n`, sources };
     });
     
     const searchResults = await Promise.all(searchPromises);
-    combinedSearchContext = searchResults.join("\n\n");
+    
+    // Combine contexts
+    combinedSearchContext = searchResults.map(r => r.context).join("\n\n");
+    
+    // Combine and Deduplicate Sources
+    const seenUrls = new Set();
+    searchResults.forEach(r => {
+      r.sources.forEach(source => {
+        if (!seenUrls.has(source.url)) {
+          seenUrls.add(source.url);
+          allSearchSources.push(source);
+        }
+      });
+    });
+
   } else {
     combinedSearchContext = "No external search available (API Key missing). Relying solely on internal logic.";
   }
@@ -229,5 +251,11 @@ export const analyzeBusinessPlanDeepSeek = async (file: File, settings: ApiSetti
   );
 
   const cleanJson = finalRes.replace(/```json/g, "").replace(/```/g, "").trim();
-  return JSON.parse(cleanJson) as AnalysisReport;
+  const parsedReport = JSON.parse(cleanJson);
+
+  // Inject the actual search sources into the report
+  return {
+    ...parsedReport,
+    searchSources: allSearchSources
+  } as AnalysisReport;
 };

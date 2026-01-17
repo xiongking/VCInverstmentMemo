@@ -294,6 +294,18 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
         },
         required: ["decision", "investmentThesis", "dueDiligenceFocus"],
       },
+      searchSources: {
+        type: Type.ARRAY,
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            title: { type: Type.STRING },
+            url: { type: Type.STRING }
+          },
+          required: ["title", "url"]
+        },
+        description: "List of external search sources used for verification."
+      }
     },
     required: [
       "executiveSummary",

@@ -10,7 +10,7 @@ import {
   CheckCircle2, XCircle, AlertCircle, Briefcase, 
   MoveUpRight, Zap, SearchCheck, Info, Layers, 
   Download, RotateCcw, X, ChevronRight, CircuitBoard, Lightbulb,
-  ArrowRight, Scale, Rocket, AlertTriangle, ListChecks
+  ArrowRight, Scale, Rocket, AlertTriangle, ListChecks, Link, Globe
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -309,7 +309,7 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
           </div>
         </section>
 
-        {/* 4. Market & Tech Trends - RESTRUCTURED & DETAILED */}
+        {/* 4. Market & Tech Trends */}
         <section>
           <SectionTitle>行业与技术趋势</SectionTitle>
           <div className="grid md:grid-cols-12 gap-6">
@@ -400,73 +400,100 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
           </div>
         </section>
 
-        {/* 5. Risk & Exit - UPDATED LAYOUT */}
+        {/* 5. Risk Assessment - Full Width & Optimized Typography */}
         <section>
-          <div className="grid md:grid-cols-2 gap-6">
-             <Card>
-                <div className="flex items-center gap-2 mb-6 text-[#ff453a]">
-                   <ShieldAlert className="h-5 w-5" />
-                   <h3 className="font-semibold text-[#1d1d1f]">全面风险评估</h3>
-                </div>
-                <div className="space-y-6">
-                   {data.riskAssessment.risks.map((r, i) => (
-                      <div key={i} className="flex flex-col gap-2 border-b border-[#F5F5F7] pb-6 last:border-0 last:pb-0">
-                         <div className="flex justify-between items-center">
-                            <span className="text-[11px] font-bold text-[#86868b] uppercase tracking-wider">{r.category}</span>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                               r.severity === 'High' ? 'bg-red-50 text-red-600' : 
-                               r.severity === 'Medium' ? 'bg-orange-50 text-orange-600' : 'bg-yellow-50 text-yellow-600'
-                            }`}>
-                               {r.severity}
+          <Card>
+            <div className="flex items-center gap-3 mb-8">
+               <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center text-[#ff453a]">
+                  <ShieldAlert className="h-5 w-5" />
+               </div>
+               <h3 className="text-xl font-semibold text-[#1d1d1f]">全面风险评估</h3>
+            </div>
+            
+            <div className="grid gap-8">
+               {data.riskAssessment.risks.map((r, i) => (
+                  <div key={i} className="group relative">
+                     {/* Decorative line */}
+                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#F5F5F7] rounded-full group-hover:bg-red-500/20 transition-colors"></div>
+                     
+                     <div className="pl-6 space-y-4">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <span className="text-xs font-bold text-[#86868b] uppercase tracking-wider border border-[#E5E5EA] px-2 py-0.5 rounded-md">
+                               {r.category}
                             </span>
-                         </div>
-                         <div className="text-[15px] font-medium text-[#1d1d1f] leading-snug">{r.risk}</div>
-                         
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 bg-[#F5F5F7]/40 p-3 rounded-xl border border-[#F5F5F7]">
-                            <div>
-                                <span className="text-[10px] font-semibold text-[#ff453a] block mb-1 uppercase tracking-wide">潜在影响 (Impact)</span>
-                                <p className="text-xs text-[#424245] leading-relaxed">{r.impact}</p>
-                            </div>
-                            <div>
-                                <span className="text-[10px] font-semibold text-[#30d158] block mb-1 uppercase tracking-wide">缓解措施 (Mitigation)</span>
-                                <p className="text-xs text-[#424245] leading-relaxed">{r.mitigation}</p>
-                            </div>
-                         </div>
-                      </div>
-                   ))}
-                </div>
-             </Card>
+                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
+                               r.severity === 'High' ? 'bg-red-50 text-red-600 border-red-100' : 
+                               r.severity === 'Medium' ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-yellow-50 text-yellow-600 border-yellow-100'
+                            }`}>
+                               {r.severity} Severity
+                            </span>
+                        </div>
 
-             {/* Exit Strategy Card - NOW WHITE */}
-             <Card>
-                <div className="flex items-center gap-2 mb-6 text-[#0071e3]">
-                   <MoveUpRight className="h-5 w-5" />
-                   <h3 className="font-semibold text-[#1d1d1f]">退出预期</h3>
-                </div>
-                <div className="space-y-6">
-                   <div>
-                      <Label>路径</Label>
-                      <div className="text-lg font-medium text-[#1d1d1f]">{data.exitStrategy.paths.join(" / ")}</div>
-                   </div>
-                   <div className="grid grid-cols-2">
-                      <div>
-                         <Label>周期</Label>
-                         <div className="text-xl font-semibold text-[#1d1d1f]">{data.exitStrategy.timeframe}</div>
-                      </div>
-                      <div>
-                         <Label>回报倍数</Label>
-                         <div className="text-xl font-semibold text-[#30d158]">{data.exitStrategy.returnsPotential}</div>
-                      </div>
-                   </div>
-                   <p className="text-sm text-[#86868b] italic pt-4 border-t border-[#F5F5F7]">
-                      "{data.exitStrategy.returnsRationale}"
-                   </p>
-                </div>
-             </Card>
-          </div>
+                        <h4 className="text-lg md:text-xl font-medium text-[#1d1d1f] leading-snug">
+                           {r.risk}
+                        </h4>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                           <div className="bg-[#F5F5F7]/60 p-5 rounded-2xl border border-[#F5F5F7] hover:border-red-100 transition-colors">
+                              <span className="text-[11px] font-bold text-[#ff453a] uppercase tracking-wide mb-2 block flex items-center gap-1.5">
+                                 <AlertTriangle className="h-3.5 w-3.5" /> 潜在影响
+                              </span>
+                              <p className="text-[14px] text-[#1d1d1f]/80 leading-relaxed">
+                                 {r.impact}
+                              </p>
+                           </div>
+                           <div className="bg-[#F5F5F7]/60 p-5 rounded-2xl border border-[#F5F5F7] hover:border-green-100 transition-colors">
+                              <span className="text-[11px] font-bold text-[#30d158] uppercase tracking-wide mb-2 block flex items-center gap-1.5">
+                                 <CheckCircle2 className="h-3.5 w-3.5" /> 应对策略
+                              </span>
+                              <p className="text-[14px] text-[#1d1d1f]/80 leading-relaxed">
+                                 {r.mitigation}
+                              </p>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               ))}
+            </div>
+          </Card>
         </section>
 
-        {/* 6. Due Diligence Focus - NEW SECTION */}
+        {/* 6. Exit Strategy - Horizontal Full Width */}
+        <section>
+             <Card>
+                <div className="flex items-center gap-3 mb-8">
+                   <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-[#0071e3]">
+                      <MoveUpRight className="h-5 w-5" />
+                   </div>
+                   <h3 className="text-xl font-semibold text-[#1d1d1f]">退出预期</h3>
+                </div>
+                
+                <div className="grid md:grid-cols-3 gap-8 divide-y md:divide-y-0 md:divide-x divide-[#E5E5EA]">
+                   <div className="space-y-2 px-4 first:pl-0">
+                      <Label>首选退出路径</Label>
+                      <div className="text-xl font-medium text-[#1d1d1f] leading-snug">
+                         {data.exitStrategy.paths.join(" / ")}
+                      </div>
+                   </div>
+                   <div className="space-y-2 pt-6 md:pt-0 px-4">
+                      <Label>预计周期</Label>
+                      <div className="text-3xl font-semibold text-[#1d1d1f]">
+                         {data.exitStrategy.timeframe}
+                      </div>
+                      <p className="text-xs text-[#86868b]">{data.exitStrategy.timeframeRationale}</p>
+                   </div>
+                   <div className="space-y-2 pt-6 md:pt-0 px-4">
+                      <Label>潜在回报倍数 (MOIC)</Label>
+                      <div className="text-3xl font-semibold text-[#30d158]">
+                         {data.exitStrategy.returnsPotential}
+                      </div>
+                      <p className="text-xs text-[#86868b]">{data.exitStrategy.returnsRationale}</p>
+                   </div>
+                </div>
+             </Card>
+        </section>
+
+        {/* 7. Due Diligence Focus */}
         <section>
           <SectionTitle>后续尽调关注重点</SectionTitle>
           <Card>
@@ -500,6 +527,39 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
              </div>
           </Card>
         </section>
+
+        {/* 8. Search Sources References - New Section */}
+        {data.searchSources && data.searchSources.length > 0 && (
+          <section>
+            <SectionTitle>外部参考来源</SectionTitle>
+            <Card>
+              <div className="grid gap-0 divide-y divide-[#E5E5EA]">
+                {data.searchSources.map((source, idx) => (
+                  <a 
+                    key={idx} 
+                    href={source.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 hover:bg-[#F5F5F7] transition-colors group text-decoration-none"
+                  >
+                    <div className="h-8 w-8 rounded-full bg-[#F5F5F7] flex items-center justify-center text-[#86868b] group-hover:bg-white group-hover:shadow-sm transition-all">
+                       <Globe className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-[#1d1d1f] truncate pr-4 group-hover:text-[#0071e3] transition-colors">
+                        {source.title}
+                      </div>
+                      <div className="text-xs text-[#86868b] truncate">
+                        {source.url}
+                      </div>
+                    </div>
+                    <Link className="h-4 w-4 text-[#d1d1d6] group-hover:text-[#0071e3]" />
+                  </a>
+                ))}
+              </div>
+            </Card>
+          </section>
+        )}
 
       </main>
     </div>

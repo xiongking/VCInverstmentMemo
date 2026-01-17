@@ -74,6 +74,11 @@ export interface TechTrendItem {
   maturity: 'Emerging' | 'Growth' | 'Mature';
 }
 
+export interface SearchSource {
+  title: string;
+  url: string;
+}
+
 export interface AnalysisReport {
   executiveSummary: {
     coreViewpoints: string[];
@@ -135,6 +140,7 @@ export interface AnalysisReport {
     investmentThesis: string;
     dueDiligenceFocus: DueDiligenceItem[];
   };
+  searchSources?: SearchSource[]; // New field for external references
 }
 
 export enum AppStatus {
