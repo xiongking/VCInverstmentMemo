@@ -1,10 +1,15 @@
 
 import { AnalysisReport, ApiSettings, SearchSource } from "../types";
 // @ts-ignore
-import * as pdfjsLib from 'https://esm.sh/pdfjs-dist@2.16.105';
+import * as pdfjsDist from 'https://esm.sh/pdfjs-dist@2.16.105';
+
+// Handle esm.sh export structure: access .default if available
+const pdfjsLib = pdfjsDist.default || pdfjsDist;
 
 // Initialize PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://esm.sh/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
+if (pdfjsLib.GlobalWorkerOptions) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://esm.sh/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
+}
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
 const TAVILY_API_URL = "https://api.tavily.com/search";
@@ -13,7 +18,9 @@ const TAVILY_API_URL = "https://api.tavily.com/search";
 async function extractPdfText(file: File): Promise<string> {
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    // pdfjsLib.getDocument returns a task object with a promise property in v2
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const pdf = await loadingTask.promise;
     let fullText = '';
     
     // Limit to first 15 pages to ensure we capture the essence without blowing context too early
