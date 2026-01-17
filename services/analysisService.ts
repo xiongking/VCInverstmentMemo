@@ -151,14 +151,17 @@ Your task is to synthesize information from the Internal Business Plan and Exter
 5.  **Competitive Radar**: Identify 6 key dimensions of competition (e.g., Tech Moat, Cost Efficiency, Brand, Supply Chain, Team, Time-to-Market). Score the Target Company vs. Market Average (1-10 scale).
 
 **FORMATTING RULES:**
-*   Language: Simplified Chinese (简体中文).
-*   Units: Use Chinese units (万, 亿).
+*   **Language**: All values MUST be in Simplified Chinese (简体中文).
+*   **Enums**: 
+    *   For Levels/Severity/Priority: Use "高", "中", "低" (Instead of High/Medium/Low).
+    *   For Maturity: Use "萌芽期", "成长期", "成熟期".
+*   **Units**: Use Chinese units (万, 亿).
 *   Output: Valid JSON strictly matching the schema.
 
 **SCHEMA DEFINITION**:
 {
   "executiveSummary": { "coreViewpoints": ["string"], "preliminaryVerdict": "Invest" | "Watch" | "Pass", "verdictReason": "string" },
-  "investmentHighlights": [{ "highlight": "string", "rating": "High" | "Medium" }],
+  "investmentHighlights": [{ "highlight": "string", "rating": "高" | "中" }],
   "businessDeepDive": {
      "technicalSolution": { "summaryPoints": ["string"], "detailedContent": "string", "buttonLabel": "string" },
      "productPortfolio": { "summaryPoints": ["string"], "detailedContent": "string", "buttonLabel": "string" },
@@ -167,14 +170,14 @@ Your task is to synthesize information from the Internal Business Plan and Exter
   },
   "marketAnalysis": {
     "marketSize": "string", "cagr": "string", "drivers": ["string"], "customerSegments": ["string"], "regulatoryEnvironment": "string", "marketPainPoints": ["string"], "summary": "string",
-    "techTrends": [{ "name": "string", "description": "string", "maturity": "Emerging" | "Growth" | "Mature" }]
+    "techTrends": [{ "name": "string", "description": "string", "maturity": "萌芽期" | "成长期" | "成熟期" }]
   },
   "competitiveLandscape": { 
     "competitors": ["string"], 
     "moat": "string", 
     "summary": "string", 
     "competitorComparison": [{ "dimension": "string", "companyScore": number, "competitorScore": number }],
-    "portersFiveForces": [{ "aspect": "string", "strength": "Low" | "Medium" | "High", "comment": "string" }] 
+    "portersFiveForces": [{ "aspect": "string", "strength": "低" | "中" | "高", "comment": "string" }] 
   },
   "swotAnalysis": { "strengths": ["string"], "weaknesses": ["string"], "opportunities": ["string"], "threats": ["string"] },
   "companyAnalysis": { "name": "string", "businessModel": "string", "productHighlight": "string", "teamAssessment": "string", "teamMembers": [{ "name": "string", "role": "string", "background": "string" }] },
@@ -191,12 +194,12 @@ Your task is to synthesize information from the Internal Business Plan and Exter
       "category": "string", 
       "risk": "string", 
       "impact": "string", 
-      "severity": "Low" | "Medium" | "High", 
+      "severity": "低" | "中" | "高", 
       "mitigation": "string" 
     }] 
   },
   "exitStrategy": { "paths": ["string"], "timeframe": "string", "timeframeRationale": "string", "returnsPotential": "string", "returnsRationale": "string" },
-  "finalRecommendation": { "decision": "string", "investmentThesis": "string", "dueDiligenceFocus": [{ "question": "string", "reasoning": "string", "priority": "High" | "Medium" | "Low" }] }
+  "finalRecommendation": { "decision": "string", "investmentThesis": "string", "dueDiligenceFocus": [{ "question": "string", "reasoning": "string", "priority": "高" | "中" | "低" }] }
 }
 `;
 

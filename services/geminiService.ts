@@ -26,7 +26,7 @@ Your task is to analyze the business plan PDF document provided by the user and 
 4.  **DUE DILIGENCE FOCUS**:
     *   Generate **10-15 specific, actionable due diligence questions**.
     *   Focus on verifying claims that seem too good to be true, technical feasibility, and legal/IP integrity.
-    *   Prioritize strictly: 'High' for Deal Breakers, 'Medium' for Valuation Impact, 'Low' for Confirmation.
+    *   Prioritize strictly: '高' (High) for Deal Breakers, '中' (Medium) for Valuation Impact, '低' (Low) for Confirmation.
     *   **Reasoning**: For each question, provide a detailed explanation of *why* this verification is critical and what risk it addresses.
 
 5.  **COMPETITIVE RADAR**:
@@ -37,6 +37,7 @@ Your task is to analyze the business plan PDF document provided by the user and 
     *   **Language**: Simplified Chinese (简体中文).
     *   **No Redundant English**.
     *   **Currency & Numbers**: Use Chinese units (万, 亿).
+    *   **Enums**: STRICTLY use "高", "中", "低" instead of High/Medium/Low.
 
 **Output JSON strictly matching the schema provided.**
 `;
@@ -100,7 +101,7 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
           type: Type.OBJECT,
           properties: {
             highlight: { type: Type.STRING },
-            rating: { type: Type.STRING, enum: ["High", "Medium"] }
+            rating: { type: Type.STRING, enum: ["高", "中"] }
           },
           required: ["highlight", "rating"]
         },
@@ -131,7 +132,7 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
               properties: {
                 name: { type: Type.STRING },
                 description: { type: Type.STRING, description: "Detailed explanation of the trend and its impact." },
-                maturity: { type: Type.STRING, enum: ["Emerging", "Growth", "Mature"] }
+                maturity: { type: Type.STRING, enum: ["萌芽期", "成长期", "成熟期"] }
               },
               required: ["name", "description", "maturity"]
             }, 
@@ -165,7 +166,7 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
               type: Type.OBJECT,
               properties: {
                 aspect: { type: Type.STRING },
-                strength: { type: Type.STRING, enum: ["Low", "Medium", "High"] },
+                strength: { type: Type.STRING, enum: ["低", "中", "高"] },
                 comment: { type: Type.STRING },
               },
               required: ["aspect", "strength", "comment"],
@@ -272,7 +273,7 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
                 category: { type: Type.STRING },
                 risk: { type: Type.STRING },
                 impact: { type: Type.STRING, description: "Detailed consequence of the risk." },
-                severity: { type: Type.STRING, enum: ["Low", "Medium", "High"] },
+                severity: { type: Type.STRING, enum: ["低", "中", "高"] },
                 mitigation: { type: Type.STRING },
               },
               required: ["category", "risk", "impact", "severity", "mitigation"],
@@ -304,7 +305,7 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
               properties: {
                 question: { type: Type.STRING },
                 reasoning: { type: Type.STRING, description: "Why this question is important." },
-                priority: { type: Type.STRING, enum: ["High", "Medium", "Low"] }
+                priority: { type: Type.STRING, enum: ["高", "中", "低"] }
               },
               required: ["question", "reasoning", "priority"]
             },

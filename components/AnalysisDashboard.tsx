@@ -10,7 +10,8 @@ import {
   CheckCircle2, XCircle, AlertCircle, Briefcase, 
   MoveUpRight, Zap, SearchCheck, Info, Layers, 
   Download, RotateCcw, X, ChevronRight, CircuitBoard, Lightbulb,
-  ArrowRight, Scale, Rocket, AlertTriangle, ListChecks, Link, Globe, Crosshair
+  ArrowRight, Scale, Rocket, AlertTriangle, ListChecks, Link, Globe, Crosshair,
+  PieChart, Coins, Microscope
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -20,10 +21,13 @@ interface DashboardProps {
 
 // --- Apple-style Components ---
 
-const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <h2 className="text-2xl font-semibold text-[#1d1d1f] tracking-tight mb-6 flex items-center gap-3">
-    {children}
-  </h2>
+const SectionTitle: React.FC<{ children: React.ReactNode; icon?: React.ReactNode }> = ({ children, icon }) => (
+  <div className="flex items-center gap-3 mb-6 mt-2 pb-4 border-b border-[#E5E5EA]">
+    {icon && <div className="text-[#0071e3]">{icon}</div>}
+    <h2 className="text-2xl font-semibold text-[#1d1d1f] tracking-tight">
+      {children}
+    </h2>
+  </div>
 );
 
 const Card: React.FC<{ children: React.ReactNode; className?: string; noPadding?: boolean }> = ({ children, className = '', noPadding = false }) => {
@@ -118,9 +122,9 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
   // Updated to strictly return colors for text/icons, not backgrounds
   const getVerdictConfig = (v: string) => {
     switch (v) {
-      case 'Invest': return { color: 'text-[#30d158]', label: 'Strong Buy', icon: CheckCircle2 };
-      case 'Watch': return { color: 'text-[#ff9f0a]', label: 'Watchlist', icon: AlertCircle };
-      case 'Pass': return { color: 'text-[#ff453a]', label: 'Pass', icon: XCircle };
+      case 'Invest': return { color: 'text-[#30d158]', label: '强烈推荐 (Strong Buy)', icon: CheckCircle2 };
+      case 'Watch': return { color: 'text-[#ff9f0a]', label: '保持关注 (Watchlist)', icon: AlertCircle };
+      case 'Pass': return { color: 'text-[#ff453a]', label: '建议放弃 (Pass)', icon: XCircle };
       default: return { color: 'text-[#86868b]', label: v, icon: Info };
     }
   };
@@ -173,6 +177,7 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
         
         {/* 1. The Verdict (Hero) - NOW TWO SEPARATE ROWS */}
         <section className="space-y-6">
+            <SectionTitle icon={<Zap className="h-6 w-6" />}>执行摘要</SectionTitle>
             {/* Row 1: Investment Verdict */}
             <div className="bg-white rounded-[32px] p-10 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white/50">
                <div>
@@ -207,13 +212,13 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
 
         {/* 2. Key Metrics & Company */}
         <section>
-          <SectionTitle>公司概况与财务</SectionTitle>
+          <SectionTitle icon={<Coins className="h-6 w-6" />}>公司概况与财务</SectionTitle>
           <div className="grid md:grid-cols-4 gap-6">
              {/* Valuation - NOW WHITE */}
              <Card className="md:col-span-2">
                 <Label>公司估值</Label>
                 <div className="mt-4 mb-2">
-                  <span className="text-4xl font-semibold text-[#1d1d1f] tracking-tight">{data.financialAnalysis.companyValuation || "N/A"}</span>
+                  <span className="text-4xl md:text-5xl font-bold text-[#1d1d1f] tracking-tight">{data.financialAnalysis.companyValuation || "N/A"}</span>
                 </div>
                 <p className="text-sm text-[#86868b] leading-relaxed">{data.financialAnalysis.valuationAssessment}</p>
              </Card>
@@ -221,7 +226,7 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
              {data.financialAnalysis.keyMetrics.slice(0, 2).map((m, i) => (
                <Card key={i} className="flex flex-col justify-center">
                  <Label>{m.label}</Label>
-                 <Value>{m.value}</Value>
+                 <Value className="text-3xl md:text-4xl">{m.value}</Value>
                </Card>
              ))}
           </div>
@@ -272,7 +277,7 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
 
         {/* 3. Deep Dive (Bento Grid) */}
         <section>
-          <SectionTitle>深度业务解析</SectionTitle>
+          <SectionTitle icon={<Microscope className="h-6 w-6" />}>深度业务解析</SectionTitle>
           <div className="grid md:grid-cols-2 gap-6">
              <Card noPadding>
                 <DeepDiveItemRow 
@@ -311,18 +316,18 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
 
         {/* 4. Market & Tech Trends */}
         <section>
-          <SectionTitle>行业与技术趋势</SectionTitle>
+          <SectionTitle icon={<PieChart className="h-6 w-6" />}>行业与技术趋势</SectionTitle>
           <div className="grid md:grid-cols-12 gap-6">
              {/* Left: Stats & Regulatory */}
              <div className="md:col-span-4 flex flex-col gap-6">
                <Card>
                   <Label>市场规模 (TAM)</Label>
-                  <Value>{data.marketAnalysis.marketSize}</Value>
+                  <Value className="text-4xl text-[#0071e3]">{data.marketAnalysis.marketSize}</Value>
                   <div className="mt-6">
                      <Label>复合增长率 (CAGR)</Label>
                      <div className="flex items-center gap-2">
-                        <Value className="text-[#30d158]">{data.marketAnalysis.cagr}</Value>
-                        <TrendingUp className="h-5 w-5 text-[#30d158]" />
+                        <Value className="text-4xl text-[#30d158]">{data.marketAnalysis.cagr}</Value>
+                        <TrendingUp className="h-6 w-6 text-[#30d158]" />
                      </div>
                   </div>
                </Card>
@@ -383,11 +388,11 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
                          <div className="flex justify-between items-start">
                             <h4 className="font-semibold text-[#1d1d1f] text-base">{t.name}</h4>
                             <Badge className={
-                               t.maturity === 'Mature' ? 'bg-green-100 text-green-700 border-green-200' :
-                               t.maturity === 'Growth' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                               (t.maturity === 'Mature' || t.maturity === '成熟期') ? 'bg-green-100 text-green-700 border-green-200' :
+                               (t.maturity === 'Growth' || t.maturity === '成长期') ? 'bg-blue-100 text-blue-700 border-blue-200' :
                                'bg-purple-100 text-purple-700 border-purple-200'
                             }>
-                               {t.maturity === 'Mature' ? '成熟期' : t.maturity === 'Growth' ? '成长期' : '萌芽期'}
+                               {t.maturity}
                             </Badge>
                          </div>
                          <p className="text-[13px] leading-relaxed text-[#86868b]">
@@ -402,7 +407,7 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
 
         {/* 5. NEW: Competitive Landscape - Radar Chart */}
         <section>
-          <SectionTitle>竞争格局与护城河</SectionTitle>
+          <SectionTitle icon={<Target className="h-6 w-6" />}>竞争格局与护城河</SectionTitle>
           <div className="grid md:grid-cols-2 gap-6">
              {/* Left: Radar Chart */}
              <Card className="flex flex-col">
@@ -452,8 +457,8 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
                          <div key={i} className="flex items-center justify-between text-sm">
                             <span className="text-[#424245]">{force.aspect}</span>
                             <Badge className={
-                               force.strength === 'High' ? 'bg-red-50 text-red-600' : 
-                               force.strength === 'Low' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'
+                               (force.strength === 'High' || force.strength === '高') ? 'bg-red-50 text-red-600' : 
+                               (force.strength === 'Low' || force.strength === '低') ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'
                             }>{force.strength}</Badge>
                          </div>
                       ))}
@@ -465,14 +470,8 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
 
         {/* 6. Risk Assessment - Full Width & Optimized Typography */}
         <section>
+          <SectionTitle icon={<ShieldAlert className="h-6 w-6" />}>全面风险评估</SectionTitle>
           <Card>
-            <div className="flex items-center gap-3 mb-8">
-               <div className="h-10 w-10 rounded-full bg-red-50 flex items-center justify-center text-[#ff453a]">
-                  <ShieldAlert className="h-5 w-5" />
-               </div>
-               <h3 className="text-xl font-semibold text-[#1d1d1f]">全面风险评估</h3>
-            </div>
-            
             <div className="grid gap-8">
                {data.riskAssessment.risks.map((r, i) => (
                   <div key={i} className="group relative">
@@ -485,10 +484,10 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
                                {r.category}
                             </span>
                             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-                               r.severity === 'High' ? 'bg-red-50 text-red-600 border-red-100' : 
-                               r.severity === 'Medium' ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-yellow-50 text-yellow-600 border-yellow-100'
+                               (r.severity === 'High' || r.severity === '高') ? 'bg-red-50 text-red-600 border-red-100' : 
+                               (r.severity === 'Medium' || r.severity === '中') ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-yellow-50 text-yellow-600 border-yellow-100'
                             }`}>
-                               {r.severity} Severity
+                               {r.severity} 严重程度
                             </span>
                         </div>
 
@@ -523,14 +522,8 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
 
         {/* 7. Exit Strategy - Horizontal Full Width */}
         <section>
+             <SectionTitle icon={<MoveUpRight className="h-6 w-6" />}>退出预期</SectionTitle>
              <Card>
-                <div className="flex items-center gap-3 mb-8">
-                   <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-[#0071e3]">
-                      <MoveUpRight className="h-5 w-5" />
-                   </div>
-                   <h3 className="text-xl font-semibold text-[#1d1d1f]">退出预期</h3>
-                </div>
-                
                 <div className="grid md:grid-cols-3 gap-8 divide-y md:divide-y-0 md:divide-x divide-[#E5E5EA]">
                    <div className="space-y-2 px-4 first:pl-0">
                       <Label>首选退出路径</Label>
@@ -540,14 +533,14 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
                    </div>
                    <div className="space-y-2 pt-6 md:pt-0 px-4">
                       <Label>预计周期</Label>
-                      <div className="text-3xl font-semibold text-[#1d1d1f]">
+                      <div className="text-3xl md:text-4xl font-bold text-[#1d1d1f]">
                          {data.exitStrategy.timeframe}
                       </div>
                       <p className="text-xs text-[#86868b]">{data.exitStrategy.timeframeRationale}</p>
                    </div>
                    <div className="space-y-2 pt-6 md:pt-0 px-4">
                       <Label>潜在回报倍数 (MOIC)</Label>
-                      <div className="text-3xl font-semibold text-[#30d158]">
+                      <div className="text-3xl md:text-4xl font-bold text-[#30d158]">
                          {data.exitStrategy.returnsPotential}
                       </div>
                       <p className="text-xs text-[#86868b]">{data.exitStrategy.returnsRationale}</p>
@@ -558,12 +551,12 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
 
         {/* 8. Due Diligence Focus */}
         <section>
-          <SectionTitle>后续尽调关注重点</SectionTitle>
+          <SectionTitle icon={<ListChecks className="h-6 w-6" />}>后续尽调关注重点</SectionTitle>
           <Card>
              <div className="grid gap-3">
                 {[...data.finalRecommendation.dueDiligenceFocus]
                   .sort((a, b) => {
-                     const pMap: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
+                     const pMap: Record<string, number> = { 'High': 3, 'Medium': 2, 'Low': 1, '高': 3, '中': 2, '低': 1 };
                      return (pMap[b.priority] || 0) - (pMap[a.priority] || 0);
                   })
                   .map((item, idx) => (
@@ -579,11 +572,11 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
                        </div>
                        <div className="flex-shrink-0 pl-9 md:pl-0 pt-0.5">
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${
-                             item.priority === 'High' ? 'bg-red-50 text-red-600 border-red-100' :
-                             item.priority === 'Medium' ? 'bg-orange-50 text-orange-600 border-orange-100' :
+                             (item.priority === 'High' || item.priority === '高') ? 'bg-red-50 text-red-600 border-red-100' :
+                             (item.priority === 'Medium' || item.priority === '中') ? 'bg-orange-50 text-orange-600 border-orange-100' :
                              'bg-gray-100 text-gray-600 border-gray-200'
                           }`}>
-                             {item.priority === 'High' ? 'P0 高优' : item.priority === 'Medium' ? 'P1 中优' : 'P2 低优'}
+                             {(item.priority === 'High' || item.priority === '高') ? 'P0 高优' : (item.priority === 'Medium' || item.priority === '中') ? 'P1 中优' : 'P2 低优'}
                           </span>
                        </div>
                     </div>
@@ -595,7 +588,7 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
         {/* 9. Search Sources References - New Section */}
         {data.searchSources && data.searchSources.length > 0 && (
           <section>
-            <SectionTitle>外部参考来源</SectionTitle>
+            <SectionTitle icon={<Globe className="h-6 w-6" />}>外部参考来源</SectionTitle>
             <Card>
               <div className="grid gap-0 divide-y divide-[#E5E5EA]">
                 {data.searchSources.map((source, idx) => (

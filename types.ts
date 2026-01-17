@@ -12,27 +12,27 @@ export interface FinancialChartData {
 
 export interface PortersForce {
   aspect: string;
-  strength: 'Low' | 'Medium' | 'High';
+  strength: '低' | '中' | '高' | 'Low' | 'Medium' | 'High'; // Support both for safety
   comment: string;
 }
 
 export interface CompetitiveDimension {
-  dimension: string; // e.g., "Technology", "Cost", "Brand"
-  companyScore: number; // 1-10
-  competitorScore: number; // 1-10 (Industry Average or Main Competitor)
+  dimension: string; 
+  companyScore: number; 
+  competitorScore: number; 
 }
 
 export interface RiskItem {
   category: string;
   risk: string;
-  impact: string; // Detailed description of the potential business impact
-  severity: 'High' | 'Medium' | 'Low';
+  impact: string; 
+  severity: '高' | '中' | '低' | 'High' | 'Medium' | 'Low';
   mitigation: string;
 }
 
 export interface HighlightItem {
   highlight: string;
-  rating: 'High' | 'Medium';
+  rating: '高' | '中' | 'High' | 'Medium';
 }
 
 export interface TeamMember {
@@ -43,8 +43,8 @@ export interface TeamMember {
 
 export interface DueDiligenceItem {
   question: string;
-  reasoning: string; // Explanation of why this question is critical
-  priority: 'High' | 'Medium' | 'Low';
+  reasoning: string; 
+  priority: '高' | '中' | '低' | 'High' | 'Medium' | 'Low';
 }
 
 export interface SWOTAnalysis {
@@ -63,9 +63,9 @@ export interface ComparableCompany {
 }
 
 export interface DeepDiveItem {
-  summaryPoints: string[]; // Logically independent core points
-  detailedContent: string; // Full detailed content for the floating window
-  buttonLabel: string; // Context-aware label (e.g., "View Technical Specs")
+  summaryPoints: string[]; 
+  detailedContent: string; 
+  buttonLabel: string; 
 }
 
 export interface BusinessDeepDive {
@@ -78,7 +78,7 @@ export interface BusinessDeepDive {
 export interface TechTrendItem {
   name: string;
   description: string;
-  maturity: 'Emerging' | 'Growth' | 'Mature';
+  maturity: '萌芽期' | '成长期' | '成熟期' | 'Emerging' | 'Growth' | 'Mature';
 }
 
 export interface SearchSource {
@@ -89,11 +89,10 @@ export interface SearchSource {
 export interface AnalysisReport {
   executiveSummary: {
     coreViewpoints: string[];
-    preliminaryVerdict: 'Invest' | 'Watch' | 'Pass';
+    preliminaryVerdict: 'Invest' | 'Watch' | 'Pass'; // Keep internal logic English, map to Chinese in UI
     verdictReason: string;
   };
   investmentHighlights: HighlightItem[];
-  // New Section: Business Deep Dive with Layered Content
   businessDeepDive: BusinessDeepDive;
   marketAnalysis: {
     marketSize: string;
@@ -102,13 +101,13 @@ export interface AnalysisReport {
     customerSegments: string[];
     regulatoryEnvironment: string;
     marketPainPoints: string[];
-    techTrends: TechTrendItem[]; // Updated to structured object array
+    techTrends: TechTrendItem[]; 
     summary: string;
   };
   competitiveLandscape: {
     competitors: string[];
     moat: string;
-    competitorComparison: CompetitiveDimension[]; // NEW: Radar chart data
+    competitorComparison: CompetitiveDimension[]; 
     portersFiveForces: PortersForce[];
     summary: string;
   };
@@ -148,7 +147,7 @@ export interface AnalysisReport {
     investmentThesis: string;
     dueDiligenceFocus: DueDiligenceItem[];
   };
-  searchSources?: SearchSource[]; // New field for external references
+  searchSources?: SearchSource[]; 
 }
 
 export enum AppStatus {
