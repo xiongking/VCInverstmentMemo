@@ -3,7 +3,7 @@ import { AnalysisReport, ApiSettings, SearchSource } from "../types";
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Initialize PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://esm.sh/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://esm.sh/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
 const TAVILY_API_URL = "https://api.tavily.com/search";
