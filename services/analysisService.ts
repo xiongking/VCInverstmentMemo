@@ -1,6 +1,7 @@
 
 import { AnalysisReport, ApiSettings, SearchSource } from "../types";
-import * as pdfjsLib from 'pdfjs-dist';
+// @ts-ignore
+import * as pdfjsLib from 'https://esm.sh/pdfjs-dist@2.16.105';
 
 // Initialize PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://esm.sh/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
@@ -134,9 +135,11 @@ Your task is to synthesize information from the Internal Business Plan and Exter
 2.  **Deep Dive**: For technical/product sections, separate high-level summaries from deep technical specs.
 3.  **Risk Analysis**: You MUST identify **6-8 distinct risks**. For each risk, specifically detail the 'impact' (e.g., potential revenue loss, legal fines) and a concrete 'mitigation' plan.
 4.  **Due Diligence (Q&A)**:
-    *   Generate **8-12 specific, high-priority questions** that an investment associate must answer before the Investment Committee (IC) meeting.
+    *   Generate **10-15 specific, high-priority questions** that an investment associate must answer before the Investment Committee (IC) meeting.
     *   **Specificity is key**: Do not ask generic questions like "Is the team good?". Ask "Verify CTO's previous tenure at [Competitor] and specifically their role in the [Project Name] launch." or "Request raw data for the 500-hour durability test mentioned on slide 12".
+    *   **Reasoning**: For each question, provide a detailed explanation of *why* this verification is critical and what risk it addresses.
     *   Link questions to the **Risks** and **Market Gaps** identified.
+5.  **Competitive Radar**: Identify 6 key dimensions of competition (e.g., Tech Moat, Cost Efficiency, Brand, Supply Chain, Team, Time-to-Market). Score the Target Company vs. Market Average (1-10 scale).
 
 **FORMATTING RULES:**
 *   Language: Simplified Chinese (简体中文).
@@ -157,7 +160,13 @@ Your task is to synthesize information from the Internal Business Plan and Exter
     "marketSize": "string", "cagr": "string", "drivers": ["string"], "customerSegments": ["string"], "regulatoryEnvironment": "string", "marketPainPoints": ["string"], "summary": "string",
     "techTrends": [{ "name": "string", "description": "string", "maturity": "Emerging" | "Growth" | "Mature" }]
   },
-  "competitiveLandscape": { "competitors": ["string"], "moat": "string", "summary": "string", "portersFiveForces": [{ "aspect": "string", "strength": "Low" | "Medium" | "High", "comment": "string" }] },
+  "competitiveLandscape": { 
+    "competitors": ["string"], 
+    "moat": "string", 
+    "summary": "string", 
+    "competitorComparison": [{ "dimension": "string", "companyScore": number, "competitorScore": number }],
+    "portersFiveForces": [{ "aspect": "string", "strength": "Low" | "Medium" | "High", "comment": "string" }] 
+  },
   "swotAnalysis": { "strengths": ["string"], "weaknesses": ["string"], "opportunities": ["string"], "threats": ["string"] },
   "companyAnalysis": { "name": "string", "businessModel": "string", "productHighlight": "string", "teamAssessment": "string", "teamMembers": [{ "name": "string", "role": "string", "background": "string" }] },
   "financialAnalysis": {
@@ -178,7 +187,7 @@ Your task is to synthesize information from the Internal Business Plan and Exter
     }] 
   },
   "exitStrategy": { "paths": ["string"], "timeframe": "string", "timeframeRationale": "string", "returnsPotential": "string", "returnsRationale": "string" },
-  "finalRecommendation": { "decision": "string", "investmentThesis": "string", "dueDiligenceFocus": [{ "question": "string", "priority": "High" | "Medium" | "Low" }] }
+  "finalRecommendation": { "decision": "string", "investmentThesis": "string", "dueDiligenceFocus": [{ "question": "string", "reasoning": "string", "priority": "High" | "Medium" | "Low" }] }
 }
 `;
 

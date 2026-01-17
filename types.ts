@@ -16,6 +16,12 @@ export interface PortersForce {
   comment: string;
 }
 
+export interface CompetitiveDimension {
+  dimension: string; // e.g., "Technology", "Cost", "Brand"
+  companyScore: number; // 1-10
+  competitorScore: number; // 1-10 (Industry Average or Main Competitor)
+}
+
 export interface RiskItem {
   category: string;
   risk: string;
@@ -37,6 +43,7 @@ export interface TeamMember {
 
 export interface DueDiligenceItem {
   question: string;
+  reasoning: string; // Explanation of why this question is critical
   priority: 'High' | 'Medium' | 'Low';
 }
 
@@ -101,6 +108,7 @@ export interface AnalysisReport {
   competitiveLandscape: {
     competitors: string[];
     moat: string;
+    competitorComparison: CompetitiveDimension[]; // NEW: Radar chart data
     portersFiveForces: PortersForce[];
     summary: string;
   };

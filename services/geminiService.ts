@@ -24,11 +24,16 @@ Your task is to analyze the business plan PDF document provided by the user and 
     *   For each risk, provide a specific **Impact** statement (what happens if the risk materializes) and a concrete **Mitigation** strategy.
 
 4.  **DUE DILIGENCE FOCUS**:
-    *   Generate **8-12 specific, actionable due diligence questions**.
+    *   Generate **10-15 specific, actionable due diligence questions**.
     *   Focus on verifying claims that seem too good to be true, technical feasibility, and legal/IP integrity.
     *   Prioritize strictly: 'High' for Deal Breakers, 'Medium' for Valuation Impact, 'Low' for Confirmation.
+    *   **Reasoning**: For each question, provide a detailed explanation of *why* this verification is critical and what risk it addresses.
 
-5.  **STRICT CHINESE FORMATTING**: 
+5.  **COMPETITIVE RADAR**:
+    *   Identify 6 key competitive dimensions (e.g., Tech Moat, Price, Brand, etc.).
+    *   Score the Company (1-10) and the Competitor Average (1-10) for each dimension.
+
+6.  **STRICT CHINESE FORMATTING**: 
     *   **Language**: Simplified Chinese (简体中文).
     *   **No Redundant English**.
     *   **Currency & Numbers**: Use Chinese units (万, 亿).
@@ -142,6 +147,18 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
           competitors: { type: Type.ARRAY, items: { type: Type.STRING } },
           moat: { type: Type.STRING },
           summary: { type: Type.STRING },
+          competitorComparison: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                dimension: { type: Type.STRING },
+                companyScore: { type: Type.NUMBER },
+                competitorScore: { type: Type.NUMBER }
+              },
+              required: ["dimension", "companyScore", "competitorScore"]
+            }
+          },
           portersFiveForces: {
             type: Type.ARRAY,
             items: {
@@ -155,7 +172,7 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
             },
           },
         },
-        required: ["competitors", "moat", "portersFiveForces", "summary"],
+        required: ["competitors", "moat", "portersFiveForces", "summary", "competitorComparison"],
       },
       swotAnalysis: {
         type: Type.OBJECT,
@@ -286,9 +303,10 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
               type: Type.OBJECT,
               properties: {
                 question: { type: Type.STRING },
+                reasoning: { type: Type.STRING, description: "Why this question is important." },
                 priority: { type: Type.STRING, enum: ["High", "Medium", "Low"] }
               },
-              required: ["question", "priority"]
+              required: ["question", "reasoning", "priority"]
             },
           },
         },

@@ -3,14 +3,14 @@ import React, { useState } from 'react';
 import { AnalysisReport, DeepDiveItem, TechTrendItem } from '../types';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend
 } from 'recharts';
 import { 
   TrendingUp, ShieldAlert, DollarSign, Target, Activity, 
   CheckCircle2, XCircle, AlertCircle, Briefcase, 
   MoveUpRight, Zap, SearchCheck, Info, Layers, 
   Download, RotateCcw, X, ChevronRight, CircuitBoard, Lightbulb,
-  ArrowRight, Scale, Rocket, AlertTriangle, ListChecks, Link, Globe
+  ArrowRight, Scale, Rocket, AlertTriangle, ListChecks, Link, Globe, Crosshair
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -400,7 +400,70 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
           </div>
         </section>
 
-        {/* 5. Risk Assessment - Full Width & Optimized Typography */}
+        {/* 5. NEW: Competitive Landscape - Radar Chart */}
+        <section>
+          <SectionTitle>竞争格局与护城河</SectionTitle>
+          <div className="grid md:grid-cols-2 gap-6">
+             {/* Left: Radar Chart */}
+             <Card className="flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                   <Target className="h-5 w-5 text-[#0071e3]" />
+                   <h3 className="font-semibold text-[#1d1d1f]">核心竞争力雷达图</h3>
+                </div>
+                <p className="text-xs text-[#86868b] mb-4">Target Company (Blue) vs Market Average (Grey)</p>
+                <div className="h-[300px] w-full -ml-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="75%" data={data.competitiveLandscape.competitorComparison || []}>
+                      <PolarGrid stroke="#E5E5EA" />
+                      <PolarAngleAxis dataKey="dimension" tick={{ fill: '#86868b', fontSize: 11 }} />
+                      <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
+                      <Radar name="本公司" dataKey="companyScore" stroke="#0071e3" fill="#0071e3" fillOpacity={0.4} />
+                      <Radar name="行业平均" dataKey="competitorScore" stroke="#86868b" fill="#86868b" fillOpacity={0.1} />
+                      <Tooltip 
+                        contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', fontSize: '12px'}} 
+                        itemStyle={{color: '#1d1d1f'}}
+                      />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}/>
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+             </Card>
+
+             {/* Right: Competitors & Moat */}
+             <div className="flex flex-col gap-6">
+                <Card>
+                   <Label>主要竞争对手</Label>
+                   <div className="flex flex-wrap gap-2 mb-6">
+                      {data.competitiveLandscape.competitors.map((c, i) => (
+                         <span key={i} className="px-3 py-1.5 bg-[#F5F5F7] text-[#1d1d1f] text-sm font-medium rounded-lg border border-[#E5E5EA]">
+                            {c}
+                         </span>
+                      ))}
+                   </div>
+                   <Label>护城河 (Moat)</Label>
+                   <p className="text-sm text-[#1d1d1f] leading-relaxed">
+                      {data.competitiveLandscape.moat}
+                   </p>
+                </Card>
+                <Card>
+                   <Label>波特五力简析</Label>
+                   <div className="space-y-3 mt-3">
+                      {data.competitiveLandscape.portersFiveForces.slice(0,3).map((force, i) => (
+                         <div key={i} className="flex items-center justify-between text-sm">
+                            <span className="text-[#424245]">{force.aspect}</span>
+                            <Badge className={
+                               force.strength === 'High' ? 'bg-red-50 text-red-600' : 
+                               force.strength === 'Low' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'
+                            }>{force.strength}</Badge>
+                         </div>
+                      ))}
+                   </div>
+                </Card>
+             </div>
+          </div>
+        </section>
+
+        {/* 6. Risk Assessment - Full Width & Optimized Typography */}
         <section>
           <Card>
             <div className="flex items-center gap-3 mb-8">
@@ -458,7 +521,7 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
           </Card>
         </section>
 
-        {/* 6. Exit Strategy - Horizontal Full Width */}
+        {/* 7. Exit Strategy - Horizontal Full Width */}
         <section>
              <Card>
                 <div className="flex items-center gap-3 mb-8">
@@ -493,7 +556,7 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
              </Card>
         </section>
 
-        {/* 7. Due Diligence Focus */}
+        {/* 8. Due Diligence Focus */}
         <section>
           <SectionTitle>后续尽调关注重点</SectionTitle>
           <Card>
@@ -504,16 +567,17 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
                      return (pMap[b.priority] || 0) - (pMap[a.priority] || 0);
                   })
                   .map((item, idx) => (
-                    <div key={idx} className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-[#F5F5F7]/50 hover:bg-[#F5F5F7] transition-colors border border-[#E5E5EA]">
-                       <div className="flex gap-4">
+                    <div key={idx} className="flex flex-col md:flex-row md:items-start justify-between gap-4 p-5 rounded-2xl bg-[#F5F5F7]/50 hover:bg-[#F5F5F7] transition-colors border border-[#E5E5EA]">
+                       <div className="flex gap-4 flex-1">
                           <div className="mt-0.5">
                              <ListChecks className="h-5 w-5 text-[#0071e3]" />
                           </div>
                           <div className="flex-1">
                              <h4 className="text-[#1d1d1f] font-medium text-[15px] leading-relaxed">{item.question}</h4>
+                             <p className="text-sm text-[#86868b] mt-2 leading-relaxed">{item.reasoning}</p>
                           </div>
                        </div>
-                       <div className="flex-shrink-0 pl-9 md:pl-0">
+                       <div className="flex-shrink-0 pl-9 md:pl-0 pt-0.5">
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${
                              item.priority === 'High' ? 'bg-red-50 text-red-600 border-red-100' :
                              item.priority === 'Medium' ? 'bg-orange-50 text-orange-600 border-orange-100' :
@@ -528,7 +592,7 @@ export const AnalysisDashboard: React.FC<DashboardProps> = ({ data, onReset }) =
           </Card>
         </section>
 
-        {/* 8. Search Sources References - New Section */}
+        {/* 9. Search Sources References - New Section */}
         {data.searchSources && data.searchSources.length > 0 && (
           <section>
             <SectionTitle>外部参考来源</SectionTitle>
