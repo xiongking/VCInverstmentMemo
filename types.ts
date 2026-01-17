@@ -150,6 +150,13 @@ export interface AnalysisReport {
   searchSources?: SearchSource[]; 
 }
 
+export interface HistoryItem {
+  id: string;
+  fileName: string;
+  timestamp: number;
+  report: AnalysisReport;
+}
+
 export enum AppStatus {
   IDLE = 'IDLE',
   ANALYZING = 'ANALYZING',

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Loader2, Terminal, Cpu } from 'lucide-react';
+import { Loader2, Cpu } from 'lucide-react';
 
 const LOG_MESSAGES = [
   "正在初始化 PDF 解析引擎...",
@@ -65,44 +65,54 @@ export const AnalysisLoader: React.FC = () => {
         </div>
       </div>
 
-      <h3 className="text-2xl font-semibold text-[#1d1d1f] tracking-tight mb-6 animate-fade-in text-center">
+      <h3 className="text-2xl font-semibold text-[#1d1d1f] tracking-tight mb-8 animate-fade-in text-center">
         正在生成深度尽调报告...
       </h3>
 
-      {/* Terminal Window */}
-      <div className="w-full max-w-2xl bg-[#1e1e1e] rounded-xl shadow-2xl overflow-hidden border border-gray-800 font-mono text-sm">
-        {/* Terminal Header */}
-        <div className="bg-[#2d2d2d] px-4 py-2 flex items-center gap-2 border-b border-gray-700">
-          <Terminal className="h-3 w-3 text-gray-400" />
-          <span className="text-gray-400 text-xs">AI Insight Engine — Analysis Log</span>
-          <div className="flex gap-1.5 ml-auto">
-             <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
-             <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
-             <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
+      {/* Transparent Log Container */}
+      <div className="w-full max-w-2xl relative">
+          {/* Fade gradient at top */}
+          <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-[#F5F5F7] to-transparent z-10 pointer-events-none"></div>
+          
+          <div 
+            ref={scrollRef}
+            className="h-64 overflow-y-auto space-y-4 px-4 py-4 scroll-smooth"
+            style={{ 
+               scrollbarWidth: 'none', 
+               msOverflowStyle: 'none',
+               maskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent)' 
+            }}
+          >
+            {logs.map((log, index) => {
+                const isLast = index === logs.length - 1;
+                return (
+                    <div 
+                        key={index} 
+                        className={`
+                            flex gap-3 text-sm font-medium transition-all duration-500
+                            ${isLast ? 'text-[#1d1d1f] scale-100 opacity-100 translate-y-0' : 'text-gray-400 scale-95 opacity-60'}
+                        `}
+                    >
+                        <span className="flex-shrink-0 opacity-50 text-[10px] pt-1 font-mono">
+                            {/* Simple Step Number */}
+                            {index + 1 < 10 ? `0${index + 1}` : index + 1}
+                        </span>
+                        <span className={log.startsWith(">") ? "text-blue-600" : ""}>
+                            {log}
+                        </span>
+                    </div>
+                )
+            })}
+             {/* Simple cursor or loading indicator at bottom */}
+             <div className="flex justify-center pt-2">
+                 <div className="flex gap-1">
+                     <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+                     <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+                     <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+                 </div>
+             </div>
           </div>
-        </div>
-        
-        {/* Terminal Content (Scrolling) */}
-        <div 
-          ref={scrollRef}
-          className="h-64 overflow-y-auto p-4 space-y-2 text-green-400 scroll-smooth"
-        >
-          {logs.map((log, index) => (
-            <div key={index} className="flex gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
-              <span className="text-gray-500 flex-shrink-0">[{new Date().toLocaleTimeString([], {hour12: false, hour: "2-digit", minute:"2-digit", second:"2-digit"})}]</span>
-              <span className={log.startsWith(">") ? "text-yellow-300" : "text-green-400"}>
-                {log}
-              </span>
-            </div>
-          ))}
-          <div className="animate-pulse text-green-400">_</div>
-        </div>
       </div>
-
-      <p className="mt-6 text-[#86868b] text-xs font-bold tracking-widest uppercase flex items-center gap-2">
-        <Loader2 className="h-3 w-3 animate-spin" />
-        Processing Business Plan
-      </p>
     </div>
   );
 };

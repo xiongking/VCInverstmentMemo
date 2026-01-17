@@ -4,9 +4,10 @@ import { InputSection } from './components/InputSection';
 import { AnalysisDashboard } from './components/AnalysisDashboard';
 import { AnalysisLoader } from './components/AnalysisLoader';
 import { SettingsModal } from './components/SettingsModal';
+import { HistoryModal } from './components/HistoryModal';
 import { analyzeBusinessPlanDeepSeek } from './services/analysisService';
-import { AnalysisReport, AppStatus, ApiSettings, DEFAULT_SETTINGS } from './types';
-import { Sparkles, Command, Settings2 } from 'lucide-react';
+import { AnalysisReport, AppStatus, ApiSettings, DEFAULT_SETTINGS, HistoryItem } from './types';
+import { Sparkles, Command, Settings2, History } from 'lucide-react';
 
 function App() {
   const [status, setStatus] = useState<AppStatus>(AppStatus.IDLE);
@@ -20,9 +21,46 @@ function App() {
     return saved ? JSON.parse(saved) : DEFAULT_SETTINGS;
   });
 
+  // History State
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('app_analysis_history');
+    if (savedHistory) {
+      try {
+        setHistory(JSON.parse(savedHistory));
+      } catch (e) {
+        console.error("Failed to parse history", e);
+      }
+    }
+  }, []);
+
   const handleSaveSettings = (newSettings: ApiSettings) => {
     setSettings(newSettings);
     localStorage.setItem('app_api_settings', JSON.stringify(newSettings));
+  };
+
+  const saveToHistory = (file: File, newReport: AnalysisReport) => {
+     const newItem: HistoryItem = {
+        id: Date.now().toString(),
+        fileName: file.name,
+        timestamp: Date.now(),
+        report: newReport
+     };
+     const updatedHistory = [newItem, ...history].slice(0, 20); // Keep last 20
+     setHistory(updatedHistory);
+     localStorage.setItem('app_analysis_history', JSON.stringify(updatedHistory));
+  };
+
+  const handleClearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem('app_analysis_history');
+  };
+
+  const handleSelectHistory = (item: HistoryItem) => {
+    setReport(item.report);
+    setStatus(AppStatus.COMPLETE);
   };
 
   const handleAnalyze = async (file: File) => {
@@ -33,6 +71,7 @@ function App() {
       const result = await analyzeBusinessPlanDeepSeek(file, settings);
       setReport(result);
       setStatus(AppStatus.COMPLETE);
+      saveToHistory(file, result);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "分析失败。请检查 API Key 配置或网络连接。");
@@ -54,6 +93,14 @@ function App() {
         settings={settings} 
         onSave={handleSaveSettings} 
       />
+      
+      <HistoryModal
+        isOpen={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        history={history}
+        onSelect={handleSelectHistory}
+        onClear={handleClearHistory}
+      />
 
       {status === AppStatus.IDLE ? (
         <div className="flex flex-col items-center justify-center min-h-screen p-6 relative overflow-hidden">
@@ -61,11 +108,19 @@ function App() {
           {/* Subtle Ambient Light (Aurora) */}
           <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-gradient-to-b from-blue-100/40 via-purple-100/30 to-transparent rounded-[100%] blur-[100px] -z-10 pointer-events-none" />
 
-          {/* Settings Trigger */}
-          <div className="absolute top-6 right-6 z-20">
+          {/* Top Buttons */}
+          <div className="absolute top-6 right-6 z-20 flex gap-3">
+            <button 
+              onClick={() => setHistoryOpen(true)}
+              className="p-3 bg-white/50 backdrop-blur-md hover:bg-white rounded-full shadow-sm text-[#1d1d1f] transition-all hover:scale-105"
+              title="历史记录"
+            >
+              <History className="h-5 w-5" />
+            </button>
             <button 
               onClick={() => setSettingsOpen(true)}
               className="p-3 bg-white/50 backdrop-blur-md hover:bg-white rounded-full shadow-sm text-[#1d1d1f] transition-all hover:scale-105"
+              title="设置"
             >
               <Settings2 className="h-5 w-5" />
             </button>
@@ -128,7 +183,19 @@ function App() {
             </div>
         </div>
       ) : (
-        report && <AnalysisDashboard data={report} onReset={handleReset} />
+        <>
+            {/* Show Header controls even in dashboard view for easy access to history */}
+            <div className="fixed top-4 right-6 z-50 flex gap-3">
+                 <button 
+                  onClick={() => setHistoryOpen(true)}
+                  className="p-2.5 bg-white/80 backdrop-blur-md hover:bg-white rounded-full shadow-sm text-[#1d1d1f] transition-all hover:scale-105 border border-white/20"
+                  title="历史记录"
+                >
+                  <History className="h-4 w-4" />
+                </button>
+            </div>
+            {report && <AnalysisDashboard data={report} onReset={handleReset} />}
+        </>
       )}
     </div>
   );
