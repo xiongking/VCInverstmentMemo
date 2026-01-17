@@ -16,9 +16,19 @@ Your task is to analyze the business plan PDF document provided by the user and 
 
 2.  **MARKET ANALYSIS**: 
     *   **No Charts**: Do not generate chart data.
-    *   **Tech Trends**: Instead, provide a detailed analysis of **Technological Trends** in this specific industry.
+    *   **Tech Trends**: Provide specific, named technical trends. For each, explain *why* it matters (Description) and assess its maturity stage (Emerging/Growth/Mature).
+    *   **Drivers & Pain Points**: Be specific.
 
-3.  **STRICT CHINESE FORMATTING**: 
+3.  **RISK ASSESSMENT**:
+    *   Identify **6-8 distinct risks**.
+    *   For each risk, provide a specific **Impact** statement (what happens if the risk materializes) and a concrete **Mitigation** strategy.
+
+4.  **DUE DILIGENCE FOCUS**:
+    *   Generate **8-12 specific, actionable due diligence questions**.
+    *   Focus on verifying claims that seem too good to be true, technical feasibility, and legal/IP integrity.
+    *   Prioritize strictly: 'High' for Deal Breakers, 'Medium' for Valuation Impact, 'Low' for Confirmation.
+
+5.  **STRICT CHINESE FORMATTING**: 
     *   **Language**: Simplified Chinese (简体中文).
     *   **No Redundant English**.
     *   **Currency & Numbers**: Use Chinese units (万, 亿).
@@ -109,7 +119,19 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
           customerSegments: { type: Type.ARRAY, items: { type: Type.STRING } },
           regulatoryEnvironment: { type: Type.STRING },
           marketPainPoints: { type: Type.ARRAY, items: { type: Type.STRING } },
-          techTrends: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Specific technical trends in the industry." },
+          techTrends: { 
+            type: Type.ARRAY, 
+            items: { 
+              type: Type.OBJECT,
+              properties: {
+                name: { type: Type.STRING },
+                description: { type: Type.STRING, description: "Detailed explanation of the trend and its impact." },
+                maturity: { type: Type.STRING, enum: ["Emerging", "Growth", "Mature"] }
+              },
+              required: ["name", "description", "maturity"]
+            }, 
+            description: "Specific technical trends in the industry." 
+          },
           summary: { type: Type.STRING },
         },
         required: ["marketSize", "cagr", "drivers", "customerSegments", "techTrends", "summary", "regulatoryEnvironment", "marketPainPoints"],
@@ -232,10 +254,11 @@ export const analyzeBusinessPlan = async (file: File): Promise<AnalysisReport> =
               properties: {
                 category: { type: Type.STRING },
                 risk: { type: Type.STRING },
+                impact: { type: Type.STRING, description: "Detailed consequence of the risk." },
                 severity: { type: Type.STRING, enum: ["Low", "Medium", "High"] },
                 mitigation: { type: Type.STRING },
               },
-              required: ["category", "risk", "severity", "mitigation"],
+              required: ["category", "risk", "impact", "severity", "mitigation"],
             },
           },
         },

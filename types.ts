@@ -19,6 +19,7 @@ export interface PortersForce {
 export interface RiskItem {
   category: string;
   risk: string;
+  impact: string; // Detailed description of the potential business impact
   severity: 'High' | 'Medium' | 'Low';
   mitigation: string;
 }
@@ -67,6 +68,12 @@ export interface BusinessDeepDive {
   operationalStrengths: DeepDiveItem; 
 }
 
+export interface TechTrendItem {
+  name: string;
+  description: string;
+  maturity: 'Emerging' | 'Growth' | 'Mature';
+}
+
 export interface AnalysisReport {
   executiveSummary: {
     coreViewpoints: string[];
@@ -83,7 +90,7 @@ export interface AnalysisReport {
     customerSegments: string[];
     regulatoryEnvironment: string;
     marketPainPoints: string[];
-    techTrends: string[]; // Replaces chart, focuses on tech analysis
+    techTrends: TechTrendItem[]; // Updated to structured object array
     summary: string;
   };
   competitiveLandscape: {
@@ -136,3 +143,13 @@ export enum AppStatus {
   COMPLETE = 'COMPLETE',
   ERROR = 'ERROR',
 }
+
+export interface ApiSettings {
+  deepSeekKey: string;
+  tavilyKey: string;
+}
+
+export const DEFAULT_SETTINGS: ApiSettings = {
+  deepSeekKey: "sk-e61e02ac831c487d880725e7cc6d3567",
+  tavilyKey: "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"
+};

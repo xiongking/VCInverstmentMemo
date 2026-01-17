@@ -1,5 +1,5 @@
 {
-  "name": "商业计划书解读",
+  "name": "vcmemo.timingcap.com",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,7 +13,8 @@
     "@google/genai": "^1.34.0",
     "react-dom": "^19.2.3",
     "recharts": "^3.6.0",
-    "react": "^19.2.3"
+    "react": "^19.2.3",
+    "pdfjs-dist": "4.0.379"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
