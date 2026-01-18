@@ -170,6 +170,6 @@ export interface ApiSettings {
 }
 
 export const DEFAULT_SETTINGS: ApiSettings = {
-  deepSeekKey: "sk-e61e02ac831c487d880725e7cc6d3567",
-  tavilyKey: "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"
+  deepSeekKey: "sk-49374c7129d94aa2bbcedae822734ef9",
+  tavilyKey: "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"
 };
